@@ -41,10 +41,14 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid
 .intro b{color:var(--green)}
 .warn{border-left:4px solid var(--red)}
 details.r{background:var(--card);border:1px solid var(--line);border-radius:14px;margin:10px 0;overflow:hidden}
-details.r summary{list-style:none;cursor:pointer;padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center;min-height:56px}
+details.r summary{list-style:none;cursor:pointer;padding:10px 14px 10px 10px;display:grid;grid-template-columns:96px 1fr auto;gap:2px 12px;align-items:center;min-height:76px}
+.thumb{grid-row:1/3;width:96px;height:64px;border-radius:10px;background:light-dark(#f3efe4,#263026);overflow:hidden}.thumb svg,.hero svg{width:100%;height:100%;display:block}
+.hero{margin:12px 0 4px;border-radius:14px;background:light-dark(#f3efe4,#263026);aspect-ratio:3/2;max-height:300px;overflow:hidden}
+.cats{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 8px}.cats button{min-height:36px;padding:0 12px;border-radius:18px;border:1px solid var(--line);background:transparent;color:var(--ink);font:600 13px Figtree,sans-serif;cursor:pointer}.cats button[aria-pressed=true]{background:var(--greenbg);color:var(--green);border-color:var(--green)}
+.count{font-size:13px;color:var(--mute);margin:4px 0 0}
 details.r summary::-webkit-details-marker{display:none}
 details.r summary h3{font-size:19px}
-.meta{grid-column:1/-1;font-size:13px;color:var(--mute)}
+.meta{grid-column:2/-1;font-size:13px;color:var(--mute)}
 .badge{font-size:13px;font-weight:700;padding:3px 10px;border-radius:12px;white-space:nowrap}
 .b1{background:var(--p1)}.b2{background:var(--p2)}.b3{background:var(--p3);color:var(--green)}
 .body{padding:0 16px 16px;border-top:1px dashed var(--line)}
@@ -70,7 +74,7 @@ footer a{color:var(--green)}
 </head>
 <body>
 <header><div class="wrap">
-  <div><h1>Mein Divertikulitis-Kochbuch</h1><p>Rezepte für Schub, Aufbau und Alltag</p></div>
+  <div><h1>Mein Divertikulitis-Kochbuch</h1><p>55 Rezepte mit Bildern für Schub, Aufbau und Alltag</p></div>
   <svg viewBox="0 0 160 120" aria-hidden="true">
     <ellipse cx="80" cy="112" rx="62" ry="6" fill="#000" opacity=".18"/>
     <path d="M78 52c-6-14 4-26 2-38" stroke="#fff" stroke-width="3" fill="none" opacity=".5" stroke-linecap="round"/>
@@ -90,6 +94,8 @@ footer a{color:var(--green)}
 <main class="wrap">
   <input class="search" id="q" type="search" placeholder="Rezept oder Zutat suchen …" aria-label="Rezepte durchsuchen">
   <div id="intro"></div>
+  <div class="cats" id="cats" aria-label="Kategorie"></div>
+  <p class="count" id="count"></p>
   <div id="list"></div>
 
   <section class="extra" id="ampel">
@@ -115,34 +121,189 @@ footer a{color:var(--green)}
 </footer>
 
 <script>
+// Rezeptdaten: p = Phase, n = Name, k = Kategorie, t = Zeit, z = Zutaten (2 Portionen), s = Schritte, i = Bild
+// Bild: v = Gefäß (bowl, plate, glass, mug, jar, board), b = Grundfarbe, t = Zutaten [Typ, Farbe, Anzahl]
+const R=[
+// ---------- PHASE 1: AKUTER SCHUB ----------
+{p:1,k:'Suppe',n:'Klare Gemüsebrühe',t:'50 Min',z:['1 Karotte','1 Stück Sellerie','1 Stange Lauch (nur das Helle)','1,5 l Wasser','1 Lorbeerblatt, wenig Salz'],s:['Gemüse grob schneiden, mit Wasser und Lorbeer aufkochen.','45 Minuten leise köcheln lassen.','Durch ein feines Sieb gießen – nur die klare Brühe trinken.'],i:{v:'bowl',b:'#e9c46a',t:[['shine','#fff7d6',3]]}},
+{p:1,k:'Suppe',n:'Hühnerbrühe',t:'70 Min',z:['1 Hähnchenschenkel ohne Haut','1 Karotte','1 Stück Sellerie','1,5 l Wasser, Salz'],s:['Alles aufkochen, Schaum abschöpfen, 1 Stunde köcheln.','Absieben und Fett von der Oberfläche abnehmen.','Warm in kleinen Schlucken trinken.'],i:{v:'bowl',b:'#e0b04a',t:[['shine','#fff2c4',4]]}},
+{p:1,k:'Brei',n:'Haferschleim',t:'12 Min',z:['4 EL zarte Haferflocken','400 ml Wasser','1 Prise Salz'],s:['Haferflocken im Wasser 10 Minuten kochen.','Durch ein Sieb streichen.','Warm und langsam essen.'],i:{v:'bowl',b:'#efe4cf',t:[['shine','#ffffff',2]]}},
+{p:1,k:'Brei',n:'Reisschleim',t:'35 Min',z:['50 g Rundkornreis','600 ml Wasser','1 Prise Salz'],s:['Reis im Wasser 30 Minuten weich kochen.','Durch ein feines Sieb streichen.','Lauwarm in kleinen Portionen essen.'],i:{v:'bowl',b:'#f4f0e6',t:[['grain','#ffffff',14]]}},
+{p:1,k:'Getränk',n:'Fenchel-Kamillen-Tee',t:'10 Min',z:['1 TL Fenchelsamen, leicht angedrückt','1 TL Kamillenblüten (oder 1 Beutel)','500 ml Wasser'],s:['Fenchel und Kamille mit kochendem Wasser übergießen.','10 Minuten ziehen lassen, abseihen.','Über den Tag verteilt trinken.'],i:{v:'mug',b:'#e3b448'}},
+{p:1,k:'Brei',n:'Apfelmus selbst gemacht',t:'20 Min',z:['3 milde Äpfel','100 ml Wasser','1 TL Honig (nach Wunsch)'],s:['Äpfel schälen, entkernen und würfeln.','Mit Wasser 15 Minuten weich kochen.','Fein pürieren, abkühlen lassen.'],i:{v:'bowl',b:'#e8cf8e',t:[['shine','#fbeec4',2]]}},
+{p:1,k:'Snack',n:'Zwieback mit Tee',t:'2 Min',z:['4 Scheiben Zwieback','1 Tasse Kamillentee'],s:['Zwieback langsam und gut kauen.','Dazu kleine Schlucke Tee trinken.'],i:{v:'board',b:'#d9a45b',t:[['rusk','#e3b06a',3]]}},
+// ---------- PHASE 2: AUFBAUKOST ----------
+{p:2,k:'Frühstück',n:'Grießbrei mit Apfelmus',t:'10 Min',z:['400 ml fettarme Milch','50 g Weichweizengrieß','1 TL Honig','4 EL Apfelmus'],s:['Milch aufkochen, Grieß einrieseln lassen.','3 Minuten unter Rühren quellen lassen.','Mit Honig süßen, Apfelmus darübergeben.'],i:{v:'bowl',b:'#f6eedd',t:[['dollop','#e5c77f',1]]}},
+{p:2,k:'Frühstück',n:'Milchreis mit Zimt',t:'35 Min',z:['100 g Milchreis','500 ml fettarme Milch','1 EL Zucker','1 Prise Zimt'],s:['Milch mit Zucker aufkochen, Reis einrühren.','Bei kleiner Hitze 30 Minuten quellen lassen, öfter umrühren.','Mit wenig Zimt bestreuen.'],i:{v:'bowl',b:'#f7f0e1',t:[['grain','#ffffff',16],['dust','#a8683a',10]]}},
+{p:2,k:'Frühstück',n:'Rührei mit Toast',t:'10 Min',z:['3 Eier','2 EL Milch','1 TL Butter','2 Scheiben Toast','Salz, Schnittlauch'],s:['Eier mit Milch und Salz verquirlen.','In der Pfanne mit Butter bei kleiner Hitze stocken lassen.','Mit getoastetem Weißbrot servieren.'],i:{v:'plate',b:'#f3f0ea',t:[['scramble','#f6d55c',5],['toast','#e2b46c',2],['herb','#6aa84f',8]]}},
+{p:2,k:'Frühstück',n:'Bananen-Joghurt-Shake',t:'5 Min',z:['1 reife Banane','250 g Naturjoghurt (mild)','150 ml fettarme Milch','1 TL Honig'],s:['Alle Zutaten im Mixer fein pürieren.','Sofort trinken.'],i:{v:'glass',b:'#f3e3a2'}},
+{p:2,k:'Frühstück',n:'Pfannkuchen mit Apfelmus',t:'20 Min',z:['100 g Weizenmehl','200 ml Milch','1 Ei','1 Prise Salz','1 TL Rapsöl','6 EL Apfelmus'],s:['Mehl, Milch, Ei und Salz glatt rühren, 10 Minuten ruhen lassen.','In wenig Öl dünne Pfannkuchen backen.','Mit Apfelmus servieren.'],i:{v:'plate',b:'#f3f0ea',t:[['pancake','#e9bf6b',1],['dollop','#e5c77f',1]]}},
+{p:2,k:'Suppe',n:'Karotten-Kartoffel-Suppe',t:'30 Min',z:['300 g Kartoffeln','300 g Karotten','700 ml Gemüsebrühe','1 EL Rapsöl','Salz, Muskat'],s:['Kartoffeln und Karotten schälen, würfeln, im Öl anschwitzen.','Brühe dazu, 20 Minuten weich kochen.','Fein pürieren und abschmecken.'],i:{v:'bowl',b:'#f08a3c',t:[['swirl','#fbd3a8',1]]}},
+{p:2,k:'Suppe',n:'Kürbiscremesuppe',t:'30 Min',z:['500 g Hokkaido-Kürbis','1 Kartoffel','700 ml Gemüsebrühe','50 ml Kochsahne (15 %)','Salz, etwas Ingwer'],s:['Kürbis und Kartoffel würfeln (Kürbis in Phase 2 schälen).','In der Brühe 20 Minuten weich kochen.','Pürieren, Sahne einrühren, abschmecken.'],i:{v:'bowl',b:'#e8731f',t:[['swirl','#fff1e0',1]]}},
+{p:2,k:'Suppe',n:'Zucchini-Cremesuppe',t:'25 Min',z:['2 Zucchini, geschält','1 Kartoffel','600 ml Gemüsebrühe','2 EL Frischkäse','Salz'],s:['Zucchini und Kartoffel würfeln.','In der Brühe 15 Minuten kochen.','Mit Frischkäse fein pürieren.'],i:{v:'bowl',b:'#c9d98a',t:[['swirl','#ffffff',1]]}},
+{p:2,k:'Suppe',n:'Hühnersuppe mit Nudeln',t:'40 Min',z:['200 g Hähnchenbrust','1 l Gemüsebrühe','2 Karotten','60 g Suppennudeln','Salz, Petersilie'],s:['Hähnchen in der Brühe 20 Minuten gar ziehen lassen, herausnehmen, klein zupfen.','Karotten schälen, in Scheiben schneiden, mit den Nudeln 8 Minuten in der Brühe kochen.','Fleisch zurück in die Suppe geben.'],i:{v:'bowl',b:'#e6bb55',t:[['noodle','#f7e2a0',8],['slice','#f08a3c',5],['meat','#f3dcc0',4]]}},
+{p:2,k:'Suppe',n:'Kartoffelsuppe',t:'30 Min',z:['500 g mehligkochende Kartoffeln','1 Karotte','700 ml Gemüsebrühe','50 ml Milch','Salz, Majoran'],s:['Kartoffeln und Karotte schälen und würfeln.','In der Brühe 20 Minuten kochen.','Mit Milch pürieren, mit Majoran würzen.'],i:{v:'bowl',b:'#f1dca0',t:[['herb','#6aa84f',6]]}},
+{p:2,k:'Hauptgericht',n:'Hähnchen mit Kartoffelpüree und Karotten',t:'35 Min',z:['250 g Hähnchenbrust','500 g mehligkochende Kartoffeln','250 g Karotten','100 ml fettarme Milch','1 TL Butter, Salz'],s:['Kartoffeln kochen und mit Milch und Butter stampfen.','Karotten schälen, in Scheiben weich dünsten.','Hähnchen in Brühe 15 Minuten gar ziehen lassen, in Scheiben schneiden.'],i:{v:'plate',b:'#f3f0ea',t:[['mash','#f5e3a8',1],['meat','#f1d2a8',3],['slice','#f08a3c',7]]}},
+{p:2,k:'Hauptgericht',n:'Gedünsteter Fisch mit Reis und Zucchini',t:'25 Min',z:['2 Seelachsfilets (je 150 g)','120 g weißer Reis','1 Zucchini, geschält','etwas Zitrone, Salz'],s:['Reis nach Packung kochen.','Zucchini würfeln und 5 Minuten dämpfen.','Fisch mit 3 EL Wasser und Deckel 8 Minuten in der Pfanne garen.'],i:{v:'plate',b:'#f3f0ea',t:[['rice','#f3eee2',1],['fillet','#f7efe4',1],['cube','#c9d98a',8],['lemon','#f6d743',1]]}},
+{p:2,k:'Hauptgericht',n:'Putenschnitzel mit Reis und Möhren',t:'25 Min',z:['2 dünne Putenschnitzel','120 g weißer Reis','300 g Karotten','100 ml Gemüsebrühe','Salz'],s:['Reis nach Packung kochen.','Karotten schälen, in Stifte schneiden, in der Brühe weich dünsten.','Putenschnitzel in einer beschichteten Pfanne mit wenig Wasser zugedeckt garen.'],i:{v:'plate',b:'#f3f0ea',t:[['rice','#f3eee2',1],['schnitzel','#e7c08a',1],['stick','#f08a3c',8]]}},
+{p:2,k:'Hauptgericht',n:'Seelachs mit Kartoffelpüree und Spinat',t:'30 Min',z:['2 Seelachsfilets','500 g Kartoffeln','200 g Blattspinat (TK)','100 ml Milch','Salz, Muskat'],s:['Kartoffelpüree zubereiten.','Spinat auftauen, kurz erwärmen, fein hacken, mit Muskat würzen.','Fisch zugedeckt in wenig Wasser 8 Minuten garen.'],i:{v:'plate',b:'#f3f0ea',t:[['mash','#f5e3a8',1],['fillet','#f7efe4',1],['greens','#3f7d3a',1]]}},
+{p:2,k:'Hauptgericht',n:'Nudeln mit passierter Tomatensauce',t:'20 Min',z:['200 g helle Nudeln','400 g passierte Tomaten','1 TL Olivenöl','Salz, etwas Basilikum','2 EL geriebener Parmesan'],s:['Nudeln nach Packung kochen.','Passierte Tomaten mit Öl 10 Minuten köcheln, würzen.','Nudeln mit Sauce und wenig Parmesan servieren.'],i:{v:'plate',b:'#f3f0ea',t:[['pasta','#f2d27c',1],['sauce','#d6452b',1],['cheese','#fff4cc',10],['leaf','#4f9a46',2]]}},
+{p:2,k:'Hauptgericht',n:'Polenta mit Karottengemüse',t:'20 Min',z:['100 g Instant-Polenta','500 ml Gemüsebrühe','300 g Karotten','1 TL Butter','Salz, Petersilie'],s:['Brühe aufkochen, Polenta einrühren, 5 Minuten quellen lassen.','Karotten schälen, in Scheiben weich dünsten.','Polenta mit Butter verfeinern, mit Gemüse servieren.'],i:{v:'plate',b:'#f3f0ea',t:[['mash','#f2c94c',1],['slice','#f08a3c',9],['herb','#6aa84f',6]]}},
+// ---------- PHASE 3: DAUERERNÄHRUNG ----------
+{p:3,k:'Frühstück',n:'Overnight Oats mit Beeren und Leinsamen',t:'5 Min + Nacht',z:['80 g Haferflocken','250 ml Milch oder Haferdrink','150 g Naturjoghurt','2 EL geschrotete Leinsamen','150 g Beeren (auch TK)','1 TL Honig'],s:['Haferflocken, Milch, Joghurt und Leinsamen verrühren.','Über Nacht in den Kühlschrank stellen.','Morgens Beeren und Honig darüber.'],i:{v:'jar',b:'#efe3c8',t:[['berry','#6a3fa0',6],['berry','#d6334a',5]]}},
+{p:3,k:'Frühstück',n:'Bircher-Müsli mit Apfel',t:'10 Min + 1 Std',z:['80 g Haferflocken','200 ml Milch','1 Apfel mit Schale, gerieben','100 g Naturjoghurt','2 EL gehackte Haselnüsse','1 TL Zitronensaft'],s:['Haferflocken mit Milch 1 Stunde einweichen.','Apfel reiben, mit Zitrone mischen und unterheben.','Joghurt unterrühren, mit Nüssen bestreuen.'],i:{v:'bowl',b:'#eadcc0',t:[['cube','#9fc25a',6],['nut','#a8703a',8]]}},
+{p:3,k:'Frühstück',n:'Chia-Pudding mit Mango',t:'5 Min + Nacht',z:['4 EL Chiasamen','300 ml Milch oder Kokosdrink','1 reife Mango','1 TL Honig'],s:['Chiasamen mit Milch und Honig verrühren, nach 10 Minuten nochmals rühren.','Über Nacht kühl stellen.','Mango würfeln und darauf verteilen.'],i:{v:'jar',b:'#e6e0d3',t:[['cube','#f6a623',8],['seed','#4a4a4a',20]]}},
+{p:3,k:'Frühstück',n:'Porridge mit Apfel und Zimt',t:'10 Min',z:['80 g Haferflocken','400 ml Milch','1 Apfel mit Schale','1 EL Walnüsse','Zimt, 1 TL Honig'],s:['Haferflocken in Milch 5 Minuten köcheln.','Apfel würfeln und kurz mitgaren.','Mit Zimt, Honig und Walnüssen servieren.'],i:{v:'bowl',b:'#ecdcb8',t:[['cube','#d9534f',6],['nut','#8a5a2b',5],['dust','#a8683a',10]]}},
+{p:3,k:'Frühstück',n:'Vollkornbrot mit Hüttenkäse und Gemüse',t:'5 Min',z:['4 Scheiben Vollkornbrot','200 g Hüttenkäse','½ Gurke','1 Tomate','4 Radieschen, Schnittlauch'],s:['Brot mit Hüttenkäse bestreichen.','Gemüse in Scheiben schneiden und darauflegen.','Mit Schnittlauch bestreuen.'],i:{v:'board',b:'#8a5a33',t:[['bread','#7a4b2a',2],['cottage','#fbfaf5',2],['slice','#7cb342',3],['slice','#e53935',3]]}},
+{p:3,k:'Frühstück',n:'Avocado-Brot mit Ei',t:'12 Min',z:['4 Scheiben Vollkornbrot','1 reife Avocado','2 Eier','Zitronensaft, Salz, Pfeffer','Kresse'],s:['Eier 8 Minuten kochen, schälen, in Scheiben schneiden.','Avocado mit Zitrone, Salz und Pfeffer zerdrücken.','Brot bestreichen, Eischeiben und Kresse darauf.'],i:{v:'board',b:'#8a5a33',t:[['bread','#7a4b2a',2],['avo','#9ccc65',2],['eggslice','#ffffff',4],['herb','#7cb342',8]]}},
+{p:3,k:'Frühstück',n:'Grüner Smoothie mit Hafer',t:'5 Min',z:['1 Handvoll Spinat','1 Banane','1 Apfel mit Schale','3 EL Haferflocken','300 ml Wasser oder Haferdrink'],s:['Alle Zutaten in den Mixer geben.','Fein pürieren, sofort trinken.'],i:{v:'glass',b:'#8bc34a'}},
+{p:3,k:'Suppe',n:'Linsen-Gemüse-Eintopf',t:'30 Min',z:['150 g rote Linsen','1 Zwiebel','2 Karotten','2 Kartoffeln','1 Dose Tomaten','800 ml Gemüsebrühe','1 EL Olivenöl, Kreuzkümmel, Salz, Pfeffer'],s:['Zwiebel, Karotten, Kartoffeln würfeln und im Öl anschwitzen.','Linsen, Tomaten und Brühe dazu, 20 Minuten köcheln.','Mit Gewürzen abschmecken.'],i:{v:'bowl',b:'#d9792e',t:[['cube','#f2c14e',6],['cube','#f08a3c',6],['herb','#4f9a46',6]]}},
+{p:3,k:'Suppe',n:'Minestrone',t:'35 Min',z:['1 Zwiebel','2 Karotten','1 Zucchini','1 Stange Lauch','1 Dose weiße Bohnen','1 Dose Tomaten','50 g Vollkorn-Suppennudeln','1 l Gemüsebrühe','Olivenöl, Basilikum, Parmesan'],s:['Gemüse würfeln, in Öl anschwitzen.','Tomaten und Brühe dazu, 15 Minuten köcheln.','Bohnen und Nudeln zugeben, 10 Minuten weiter kochen.','Mit Basilikum und Parmesan servieren.'],i:{v:'bowl',b:'#d65f3a',t:[['bean','#f4efe0',7],['cube','#f08a3c',5],['cube','#7cb342',5],['noodle','#d9b36a',4]]}},
+{p:3,k:'Suppe',n:'Erbsensuppe',t:'30 Min',z:['400 g Erbsen (TK)','1 Kartoffel','1 Zwiebel','700 ml Gemüsebrühe','2 EL Joghurt','Minze oder Petersilie'],s:['Zwiebel und Kartoffel würfeln, kurz anschwitzen.','Brühe und Erbsen dazu, 15 Minuten kochen.','Pürieren, mit Joghurt und Kräutern servieren.'],i:{v:'bowl',b:'#7cb342',t:[['swirl','#ffffff',1],['dot','#5d9b2f',6]]}},
+{p:3,k:'Suppe',n:'Gemüse-Chili ohne Fleisch',t:'35 Min',z:['1 Dose Kidneybohnen','1 Dose Mais','1 Dose Tomaten','1 Paprika','1 Zwiebel, 1 Knoblauchzehe','1 EL Olivenöl','Kreuzkümmel, Paprikapulver, Salz','2 EL Joghurt'],s:['Zwiebel, Knoblauch und Paprika in Öl anbraten.','Bohnen, Mais, Tomaten und Gewürze zugeben, 20 Minuten köcheln.','Mit einem Klecks Joghurt servieren.'],i:{v:'bowl',b:'#b5432a',t:[['bean','#7b2020',9],['dot','#f2c94c',10],['swirl','#ffffff',1]]}},
+{p:3,k:'Hauptgericht',n:'Vollkornpasta mit Gemüse-Tomatensauce',t:'25 Min',z:['200 g Vollkornspaghetti','1 Zucchini','1 Paprika','1 Zwiebel, 1 Knoblauchzehe','1 Dose gehackte Tomaten','1 EL Olivenöl, Basilikum, Parmesan'],s:['Nudeln nach Packung kochen.','Gemüse würfeln, in Öl anbraten, Tomaten dazu, 10 Minuten köcheln.','Mit Basilikum würzen, mit Parmesan servieren.'],i:{v:'plate',b:'#f3f0ea',t:[['pasta','#b98a4e',1],['sauce','#d6452b',1],['cube','#7cb342',6],['cube','#f2c14e',5],['leaf','#4f9a46',2]]}},
+{p:3,k:'Hauptgericht',n:'Lachs mit Ofengemüse und Quinoa',t:'35 Min',z:['2 Lachsfilets','120 g Quinoa','1 Brokkoli','1 Süßkartoffel','2 EL Olivenöl, Zitrone, Salz, Pfeffer'],s:['Süßkartoffel würfeln, Brokkoli in Röschen, mit Öl bei 200 °C 15 Minuten backen.','Lachs dazulegen, weitere 12 Minuten backen.','Quinoa kochen, alles mit Zitrone servieren.'],i:{v:'plate',b:'#f3f0ea',t:[['quinoa','#efe2c2',1],['salmon','#f4845f',1],['broc','#3f8f3a',4],['cube','#f08a3c',6],['lemon','#f6d743',1]]}},
+{p:3,k:'Hauptgericht',n:'Kichererbsen-Curry mit Spinat',t:'30 Min',z:['1 Dose Kichererbsen','1 Dose Kokosmilch (light)','200 g Spinat','1 Zwiebel, 1 Stück Ingwer','2 TL Currypulver','120 g Naturreis'],s:['Zwiebel und Ingwer anbraten, Curry kurz mitrösten.','Kichererbsen und Kokosmilch dazu, 10 Minuten köcheln, Spinat unterheben.','Mit Naturreis servieren.'],i:{v:'bowl',b:'#e8a33c',t:[['bean','#f1d08a',10],['greens','#3f7d3a',1],['herb','#4f9a46',5]]}},
+{p:3,k:'Hauptgericht',n:'Ofenkartoffel mit Kräuterquark und Brokkoli',t:'50 Min',z:['4 mittelgroße Kartoffeln','250 g Magerquark','3 EL Milch','Schnittlauch, Petersilie, Salz','1 Brokkoli'],s:['Kartoffeln waschen, mit Schale bei 200 °C 45 Minuten backen.','Quark mit Milch, Kräutern und Salz verrühren.','Brokkoli 6 Minuten dämpfen, alles zusammen servieren.'],i:{v:'plate',b:'#f3f0ea',t:[['potato','#c89b5a',2],['dollop','#ffffff',2],['broc','#3f8f3a',4],['herb','#4f9a46',8]]}},
+{p:3,k:'Hauptgericht',n:'Gemüse-Reispfanne mit Naturreis',t:'40 Min',z:['150 g Naturreis','200 g Erbsen (TK)','2 Karotten','1 Paprika','2 Eier','1 EL Rapsöl','2 EL Sojasauce'],s:['Naturreis nach Packung kochen (ca. 30 Minuten).','Gemüse würfeln und in Öl anbraten.','Reis zugeben, Eier darüber verrühren, mit Sojasauce würzen.'],i:{v:'plate',b:'#f3f0ea',t:[['rice','#e9d8b0',1],['dot','#5d9b2f',10],['cube','#f08a3c',6],['cube','#e53935',5],['scramble','#f6d55c',3]]}},
+{p:3,k:'Hauptgericht',n:'Hähnchen-Gemüse-Pfanne mit Vollkornreis',t:'35 Min',z:['250 g Hähnchenbrust','150 g Vollkornreis','1 Brokkoli','1 Paprika','1 Zucchini','1 EL Rapsöl','Salz, Pfeffer, Paprikapulver'],s:['Reis nach Packung kochen.','Hähnchen in Streifen schneiden und in Öl anbraten.','Gemüse zugeben, 8 Minuten mitbraten, würzen.'],i:{v:'plate',b:'#f3f0ea',t:[['rice','#e9d8b0',1],['meat','#e2b77a',5],['broc','#3f8f3a',3],['cube','#e53935',5],['cube','#9ccc65',5]]}},
+{p:3,k:'Hauptgericht',n:'Quinoa-Bowl mit Süßkartoffel und Bohnen',t:'30 Min',z:['120 g Quinoa','1 Süßkartoffel','1 Dose schwarze Bohnen','1 Avocado','1 Handvoll Spinat','Limette, Olivenöl, Salz'],s:['Süßkartoffel würfeln, mit Öl bei 200 °C 20 Minuten backen.','Quinoa kochen, Bohnen abspülen.','Alles mit Spinat und Avocado in Schalen anrichten, mit Limette beträufeln.'],i:{v:'bowl',b:'#efe2c2',t:[['cube','#f08a3c',7],['bean','#2b2b2b',9],['avo','#9ccc65',1],['leaf','#3f7d3a',3]]}},
+{p:3,k:'Hauptgericht',n:'Ratatouille mit Vollkornbaguette',t:'45 Min',z:['1 Aubergine','1 Zucchini','2 Paprika','4 Tomaten','1 Zwiebel, 2 Knoblauchzehen','2 EL Olivenöl, Thymian, Salz','½ Vollkornbaguette'],s:['Gemüse würfeln.','Zwiebel und Knoblauch in Öl anschwitzen, Gemüse zugeben.','Zugedeckt 30 Minuten schmoren, mit Thymian würzen, mit Baguette servieren.'],i:{v:'bowl',b:'#c8462e',t:[['cube','#5e3a7a',5],['cube','#9ccc65',5],['cube','#f2c14e',5],['herb','#4f9a46',6]]}},
+{p:3,k:'Hauptgericht',n:'Kabeljau auf Linsengemüse',t:'35 Min',z:['2 Kabeljaufilets','150 g Berglinsen','2 Karotten','1 Stange Lauch','300 ml Gemüsebrühe','1 EL Olivenöl, Zitrone, Salz'],s:['Linsen in der Brühe 25 Minuten garen.','Karotten und Lauch klein schneiden, die letzten 10 Minuten mitgaren.','Fisch in der Pfanne mit wenig Öl je Seite 3 Minuten braten, auf die Linsen legen.'],i:{v:'plate',b:'#f3f0ea',t:[['lentil','#6b5a3e',1],['fillet','#f7efe4',1],['cube','#f08a3c',5],['lemon','#f6d743',1]]}},
+{p:3,k:'Hauptgericht',n:'Gefüllte Paprika mit Bulgur',t:'45 Min',z:['4 Paprika','100 g Bulgur','1 Dose Kichererbsen','1 Zwiebel','200 g passierte Tomaten','50 g Feta','Paprikapulver, Salz'],s:['Bulgur nach Packung garen, mit Kichererbsen, Zwiebel und Gewürzen mischen.','Paprika aushöhlen und füllen, in eine Form setzen.','Tomaten angießen, Feta darüberbröseln, bei 180 °C 30 Minuten backen.'],i:{v:'plate',b:'#f3f0ea',t:[['pepper','#e53935',1],['pepper','#f2c14e',1],['sauce','#d6452b',0]]}},
+{p:3,k:'Hauptgericht',n:'Vollkorn-Gemüsepizza',t:'40 Min',z:['250 g Vollkornmehl','½ Würfel Hefe, 150 ml lauwarmes Wasser','200 g passierte Tomaten','1 Paprika, 100 g Champignons, 1 Zucchini','125 g Mozzarella','Olivenöl, Oregano, Salz'],s:['Mehl, Hefe, Wasser, 1 EL Öl und Salz zu einem Teig kneten, 20 Minuten gehen lassen.','Ausrollen, mit Tomaten bestreichen, Gemüse und Mozzarella belegen.','Bei 220 °C 15 Minuten backen.'],i:{v:'pizza',b:'#c58a4a',t:[['dot','#ffffff',8],['slice','#9ccc65',4],['cube','#e53935',5],['dot','#b9a27f',6]]}},
+{p:3,k:'Salat',n:'Bunter Bohnensalat',t:'10 Min + 30 Min',z:['1 Dose Kidneybohnen','1 Dose weiße Bohnen','1 rote Zwiebel','1 Paprika','3 EL Olivenöl, 2 EL Essig','Petersilie, Salz, Pfeffer'],s:['Bohnen abspülen, Gemüse klein schneiden.','Mit Öl, Essig und Gewürzen mischen.','30 Minuten ziehen lassen.'],i:{v:'bowl',b:'#f3eee2',t:[['bean','#8e2a2a',9],['bean','#f4efe0',8],['cube','#f2c14e',5],['herb','#4f9a46',8]]}},
+{p:3,k:'Salat',n:'Bulgursalat mit Kräutern',t:'20 Min',z:['120 g Bulgur','2 Tomaten','½ Gurke','1 Bund Petersilie','½ Bund Minze','Saft einer Zitrone, 3 EL Olivenöl, Salz'],s:['Bulgur mit heißem Wasser übergießen, 15 Minuten quellen lassen.','Tomaten, Gurke und Kräuter fein hacken.','Alles mit Zitrone, Öl und Salz mischen.'],i:{v:'bowl',b:'#e3cf98',t:[['cube','#e53935',6],['cube','#9ccc65',6],['herb','#3f8f3a',14]]}},
+{p:3,k:'Salat',n:'Linsensalat mit Feta',t:'25 Min',z:['150 g Berglinsen','1 Paprika','½ Gurke','80 g Feta','2 EL Olivenöl, 1 EL Essig','Petersilie, Salz'],s:['Linsen 20 Minuten bissfest kochen, abkühlen lassen.','Gemüse würfeln, Feta zerbröseln.','Alles mit Öl, Essig und Kräutern mischen.'],i:{v:'bowl',b:'#7a6648',t:[['cube','#ffffff',7],['cube','#e53935',5],['cube','#9ccc65',5],['herb','#4f9a46',6]]}},
+{p:3,k:'Abendessen',n:'Gemüse-Omelett mit Vollkornbrot',t:'15 Min',z:['4 Eier','1 Handvoll Spinat','4 Champignons','1 Tomate','2 Scheiben Vollkornbrot'],s:['Gemüse klein schneiden und kurz anbraten.','Verquirlte Eier darübergießen, bei kleiner Hitze stocken lassen.','Mit Vollkornbrot servieren.'],i:{v:'plate',b:'#f3f0ea',t:[['omelet','#f6d55c',1],['leaf','#3f7d3a',3],['dot','#e53935',4],['dot','#c9b49a',4]]}},
+{p:3,k:'Abendessen',n:'Vollkorn-Wrap mit Hummus und Gemüse',t:'10 Min',z:['2 Vollkorn-Tortillas','4 EL Hummus','1 Karotte, geraspelt','½ Gurke','1 Handvoll Salat','½ Paprika'],s:['Tortillas mit Hummus bestreichen.','Gemüse in Streifen schneiden und darauflegen.','Fest einrollen und halbieren.'],i:{v:'plate',b:'#f3f0ea',t:[['wrap','#d8b27a',2]]}},
+{p:3,k:'Snack',n:'Nuss-Trockenobst-Mix',t:'2 Min',z:['30 g Mandeln','30 g Walnüsse','30 g getrocknete Pflaumen','30 g getrocknete Aprikosen'],s:['Alles mischen und in eine Dose füllen.','Pro Snack eine kleine Handvoll essen.'],i:{v:'bowl',b:'#efe6d6',t:[['nut','#a8703a',8],['nut','#6b4423',6],['dot','#f2a33a',5],['dot','#4a2a3a',5]]}},
+{p:3,k:'Snack',n:'Selbstgemachtes Popcorn',t:'8 Min',z:['50 g Popcornmais','1 EL Rapsöl','1 Prise Salz'],s:['Öl mit Mais in einen großen Topf geben, Deckel drauf.','Bei mittlerer Hitze erhitzen, bis es nicht mehr ploppt.','Leicht salzen.'],i:{v:'bowl',b:'#f6eed8',t:[['pop','#fff8e1',18]]}},
+{p:3,k:'Snack',n:'Gemüsesticks mit Hummus',t:'10 Min',z:['2 Karotten','½ Gurke','1 Paprika','150 g Hummus'],s:['Gemüse in Stifte schneiden.','Hummus in ein Schälchen füllen und dippen.'],i:{v:'plate',b:'#f3f0ea',t:[['dip','#e2c48f',1],['stick','#f08a3c',5],['stick','#9ccc65',5],['stick','#e53935',4]]}},
+{p:3,k:'Snack',n:'Joghurt mit Beeren und Nüssen',t:'3 Min',z:['300 g Naturjoghurt','150 g Beeren','2 EL Walnüsse','1 EL Leinsamen','1 TL Honig'],s:['Joghurt in Schalen füllen.','Beeren, Nüsse und Leinsamen darübergeben.','Mit Honig beträufeln.'],i:{v:'bowl',b:'#fbfaf5',t:[['berry','#6a3fa0',6],['berry','#d6334a',5],['nut','#8a5a2b',4]]}},
+{p:3,k:'Snack',n:'Haferflocken-Bananen-Kekse',t:'25 Min',z:['2 reife Bananen','150 g Haferflocken','2 EL Rosinen','1 TL Zimt'],s:['Bananen zerdrücken, mit Haferflocken, Rosinen und Zimt mischen.','Kleine Häufchen aufs Backblech setzen, flach drücken.','Bei 180 °C 15 Minuten backen.'],i:{v:'plate',b:'#f3f0ea',t:[['cookie','#c9995a',5]]}}
+];
+
+// Zeichnet aus einer Bild-Beschreibung ein SVG des fertigen Gerichts
+function dish(spec,seed){
+ let s=seed*9301+49297;const rnd=()=>{s=(s*9301+49297)%233280;return s/233280};
+ const W=240,H=160;let o='';
+ const sh=(c,a)=>{const n=parseInt(c.slice(1),16);let r=n>>16,g=n>>8&255,b=n&255;const f=x=>Math.max(0,Math.min(255,Math.round(x+a*255)));return'#'+((1<<24)|(f(r)<<16)|(f(g)<<8)|f(b)).toString(16).slice(1)};
+ const BIG=new Set(['mash','rice','quinoa','lentil','fillet','salmon','schnitzel','greens','pancake','omelet','pasta','potato','pepper','wrap','dip','sauce','dollop','swirl','avo','bread','rusk','toast','cottage','cookie']);
+ // Fläche, in der Essen liegt
+ let cx=120,cy=84,rx=80,ry=44;
+ const v=spec.v;
+ // Schatten
+ o+=`<ellipse cx="120" cy="${v==='glass'||v==='mug'||v==='jar'?146:140}" rx="${v==='glass'||v==='mug'||v==='jar'?52:108}" ry="10" fill="#000" opacity=".14"/>`;
+ if(v==='plate'){
+  o+=`<ellipse cx="120" cy="82" rx="110" ry="62" fill="#f7f6f1" stroke="#d8d4c8"/><ellipse cx="120" cy="84" rx="86" ry="46" fill="#efede6"/><ellipse cx="120" cy="80" rx="86" ry="44" fill="#fbfaf6"/>`;
+ }else if(v==='bowl'){
+  cx=120;cy=58;rx=78;ry=22;
+  o+=`<path d="M22 58 Q26 140 120 142 Q214 140 218 58Z" fill="#f4f1ea"/><path d="M22 58 Q26 140 120 142 Q214 140 218 58" fill="none" stroke="#d8d4c8"/><path d="M40 98 Q120 126 200 98" fill="none" stroke="#2f5d34" stroke-width="5" opacity=".55"/><ellipse cx="120" cy="58" rx="98" ry="30" fill="#ffffff" stroke="#d8d4c8"/><ellipse cx="120" cy="60" rx="86" ry="25" fill="${spec.b}"/><ellipse cx="120" cy="56" rx="86" ry="21" fill="${sh(spec.b,.04)}"/>`;
+ }else if(v==='board'){
+  o+=`<rect x="14" y="30" width="200" height="104" rx="18" fill="${spec.b}"/><rect x="14" y="30" width="200" height="98" rx="18" fill="${sh(spec.b,.07)}"/><circle cx="196" cy="48" r="6" fill="${sh(spec.b,-.15)}"/>`;
+  cx=110;cy=80;rx=80;ry=34;
+ }else if(v==='pizza'){
+  o+=`<ellipse cx="120" cy="82" rx="108" ry="60" fill="${spec.b}"/><ellipse cx="120" cy="80" rx="98" ry="53" fill="#d6452b"/>`;
+  rx=86;ry=46;cy=80;
+ }else if(v==='glass'){
+  o+=`<path d="M82 20 L90 142 Q120 150 150 142 L158 20Z" fill="#eef3f2" opacity=".9" stroke="#cfd8d6"/><path d="M85 44 L91 140 Q120 148 149 140 L155 44Z" fill="${spec.b}"/><ellipse cx="120" cy="44" rx="35" ry="7" fill="${sh(spec.b,.12)}"/><path d="M138 4 L128 44" stroke="#c8402b" stroke-width="5" stroke-linecap="round"/><path d="M96 50 L100 132" stroke="#fff" stroke-width="4" opacity=".45" stroke-linecap="round"/>`;
+  return wrap(o);
+ }else if(v==='mug'){
+  o+=`<path d="M156 62 q34 0 34 26 q0 26 -34 26" fill="none" stroke="#f1ede4" stroke-width="12"/><path d="M70 40 L74 136 Q118 150 160 136 L164 40Z" fill="#f4f1ea" stroke="#d8d4c8"/><ellipse cx="117" cy="40" rx="47" ry="12" fill="#ffffff" stroke="#d8d4c8"/><ellipse cx="117" cy="42" rx="40" ry="9" fill="${spec.b}"/><path d="M100 30 q-8 -12 2 -24 M124 28 q-8 -12 2 -24" stroke="#9aa79a" stroke-width="3" fill="none" stroke-linecap="round" opacity=".6"/><path d="M90 80 q28 12 56 0" stroke="#2f5d34" stroke-width="5" fill="none" opacity=".5"/><rect x="164" y="98" width="30" height="20" rx="3" fill="#e9d8a6" transform="rotate(12 179 108)"/>`;
+  return wrap(o);
+ }else if(v==='jar'){
+  o+=`<rect x="68" y="18" width="104" height="14" rx="4" fill="#c9c2b2"/><path d="M72 32 L72 132 Q72 146 88 146 L152 146 Q168 146 168 132 L168 32Z" fill="#eef3f2" stroke="#cfd8d6"/><path d="M76 64 L76 130 Q76 142 90 142 L150 142 Q164 142 164 130 L164 64Z" fill="${spec.b}"/><path d="M76 64 Q120 72 164 64 L164 86 Q120 94 76 86Z" fill="${sh(spec.b,-.05)}"/>`;
+  cx=120;cy=60;rx=40;ry=8;
+ }
+ // Große Teile in feste Plätze, kleine verstreut
+ const slots=v==='board'?[[-48,0],[42,2],[0,0]]:[[-36,-2],[36,4],[2,22],[-8,-18]];
+ const K=v==='plate'?1.3:1;
+ let si=0;const all=[];
+ for(const [t,c,n] of (spec.t||[])){for(let k=0;k<n;k++)all.push([t,c])}
+ const bigs=all.filter(a=>BIG.has(a[0])),smalls=all.filter(a=>!BIG.has(a[0]));
+ const single=bigs.length===1;
+ const onBread=[];
+ for(const [t,c] of bigs){
+  let [dx,dy]=single?[0,0]:slots[si++%slots.length];
+  if(v==='bowl'||v==='jar'){dx*=.6;dy*=.3}
+  const x=cx+dx,y=cy+dy;
+  if(['cottage','avo'].includes(t)&&v==='board'){const b=onBread.shift()||[x,y];o+=big(t,c,b[0],b[1]);continue}
+  if(t==='bread'||t==='rusk'||t==='toast'){onBread.push([x,y-2])}
+  o+=K===1?big(t,c,x,y):`<g transform="translate(${x} ${y}) scale(${K}) translate(${-x} ${-y})">${big(t,c,x,y)}</g>`;
+ }
+ for(const [t,c] of smalls){
+  const a=rnd()*Math.PI*2,r=Math.sqrt(rnd())*(v==='plate'?.78:.82);
+  const x=cx+Math.cos(a)*rx*r,y=cy+Math.sin(a)*ry*r;
+  o+=small(t,c,x,y,rnd()*180);
+ }
+ return wrap(o);
+ function wrap(inner){return`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img">${inner}</svg>`}
+ function big(t,c,x,y){
+  const d=sh(c,-.12),l=sh(c,.12);
+  switch(t){
+   case 'mash':case 'rice':case 'quinoa':case 'lentil':{let g=`<ellipse cx="${x}" cy="${y+4}" rx="36" ry="18" fill="${d}"/><ellipse cx="${x}" cy="${y}" rx="34" ry="17" fill="${c}"/><ellipse cx="${x-8}" cy="${y-6}" rx="14" ry="6" fill="${l}"/>`;if(t!=='mash'){for(let k=0;k<26;k++){const a=rnd()*6.28,r=Math.sqrt(rnd());g+=`<ellipse cx="${(x+Math.cos(a)*30*r).toFixed(1)}" cy="${(y+Math.sin(a)*14*r).toFixed(1)}" rx="${t==='lentil'?2.2:2.6}" ry="1.4" fill="${t==='rice'?'#fff':l}" opacity=".9" transform="rotate(${(rnd()*180).toFixed(0)} ${(x+Math.cos(a)*30*r).toFixed(1)} ${(y+Math.sin(a)*14*r).toFixed(1)})"/>`}}return g}
+   case 'fillet':return`<path d="M${x-34} ${y} Q${x-20} ${y-16} ${x+20} ${y-12} Q${x+38} ${y-6} ${x+34} ${y+6} Q${x+10} ${y+16} ${x-26} ${y+10}Z" fill="${c}" stroke="${sh(c,-.18)}"/><path d="M${x-14} ${y-8} q4 8 0 14 M${x} ${y-10} q4 8 0 16 M${x+14} ${y-9} q4 8 0 14" stroke="${sh(c,-.12)}" fill="none"/>`;
+   case 'salmon':return`<rect x="${x-30}" y="${y-13}" width="60" height="26" rx="8" fill="${c}"/><rect x="${x-30}" y="${y-13}" width="60" height="8" rx="4" fill="${sh(c,-.15)}"/><path d="M${x-16} ${y-6} q4 9 0 18 M${x} ${y-6} q4 9 0 18 M${x+16} ${y-6} q4 9 0 18" stroke="#ffe5d6" stroke-width="2" fill="none"/>`;
+   case 'schnitzel':return`<path d="M${x-34} ${y-4} Q${x-26} ${y-20} ${x+6} ${y-16} Q${x+36} ${y-12} ${x+32} ${y+6} Q${x+18} ${y+18} ${x-20} ${y+14}Z" fill="${c}" stroke="${d}"/>`;
+   case 'greens':{let g='';for(let k=0;k<12;k++){g+=`<ellipse cx="${(x-26+rnd()*52).toFixed(1)}" cy="${(y-8+rnd()*16).toFixed(1)}" rx="9" ry="5" fill="${k%2?c:l}" transform="rotate(${(rnd()*180).toFixed(0)} ${x} ${y})"/>`}return g}
+   case 'pancake':return`<ellipse cx="${x-10}" cy="${y+2}" rx="62" ry="32" fill="${d}"/><ellipse cx="${x-10}" cy="${y}" rx="60" ry="30" fill="${c}"/>`+[...Array(9)].map(()=>`<circle cx="${(x-50+rnd()*80).toFixed(1)}" cy="${(y-20+rnd()*40).toFixed(1)}" r="${(2+rnd()*3).toFixed(1)}" fill="${d}" opacity=".6"/>`).join('');
+   case 'omelet':return`<path d="M${x-50} ${y+6} Q${x-46} ${y-30} ${x} ${y-30} Q${x+46} ${y-30} ${x+50} ${y+6}Z" fill="${c}" stroke="${d}"/><path d="M${x-48} ${y+6} L${x+48} ${y+6}" stroke="${d}" stroke-width="3"/>`;
+   case 'pasta':{let g=`<ellipse cx="${x}" cy="${y+2}" rx="52" ry="28" fill="${d}"/>`;for(let k=0;k<26;k++){const a=rnd()*6.28,r=rnd()*.9;const px=x+Math.cos(a)*46*r,py=y+Math.sin(a)*24*r;g+=`<path d="M${px.toFixed(1)} ${py.toFixed(1)} q${(8-rnd()*16).toFixed(1)} ${(-6-rnd()*6).toFixed(1)} ${(18-rnd()*36).toFixed(1)} ${(4-rnd()*8).toFixed(1)}" stroke="${k%3?c:l}" stroke-width="3" fill="none" stroke-linecap="round"/>`}return g}
+   case 'sauce':return`<path d="M${x-26} ${y} Q${x-24} ${y-16} ${x} ${y-15} Q${x+28} ${y-14} ${x+26} ${y+2} Q${x+20} ${y+16} ${x-4} ${y+14} Q${x-28} ${y+12} ${x-26} ${y}Z" fill="${c}"/><ellipse cx="${x-6}" cy="${y-5}" rx="9" ry="3" fill="${l}" opacity=".6"/>`;
+   case 'potato':return`<ellipse cx="${x}" cy="${y+3}" rx="26" ry="16" fill="${d}"/><ellipse cx="${x}" cy="${y}" rx="25" ry="15" fill="${c}"/><path d="M${x-12} ${y-2} L${x+12} ${y-2}" stroke="#f6e6b8" stroke-width="6" stroke-linecap="round"/>`;
+   case 'pepper':return`<ellipse cx="${x}" cy="${y+4}" rx="30" ry="22" fill="${d}"/><ellipse cx="${x}" cy="${y}" rx="29" ry="21" fill="${c}"/><ellipse cx="${x}" cy="${y-2}" rx="19" ry="12" fill="#d9b36a"/>`+[...Array(8)].map(()=>`<circle cx="${(x-14+rnd()*28).toFixed(1)}" cy="${(y-9+rnd()*14).toFixed(1)}" r="2.4" fill="${rnd()>.5?'#f1d08a':'#ffffff'}"/>`).join('')+`<rect x="${x-3}" y="${y-26}" width="6" height="10" rx="2" fill="#4f7d2f"/>`;
+   case 'wrap':return`<rect x="${x-34}" y="${y-13}" width="58" height="26" rx="13" fill="${c}"/><circle cx="${x+24}" cy="${y}" r="14" fill="${l}"/><circle cx="${x+24}" cy="${y}" r="10" fill="#e2c48f"/><circle cx="${x+22}" cy="${y-3}" r="3" fill="#f08a3c"/><circle cx="${x+27}" cy="${y+2}" r="3" fill="#7cb342"/><circle cx="${x+21}" cy="${y+4}" r="2.4" fill="#e53935"/>`;
+   case 'dip':return`<ellipse cx="${x}" cy="${y+3}" rx="26" ry="15" fill="#d8d4c8"/><ellipse cx="${x}" cy="${y}" rx="24" ry="13" fill="#fff"/><ellipse cx="${x}" cy="${y+1}" rx="19" ry="9" fill="${c}"/><circle cx="${x+3}" cy="${y}" r="2" fill="#c8402b"/>`;
+   case 'dollop':return`<ellipse cx="${x}" cy="${y+2}" rx="17" ry="8" fill="${d}"/><ellipse cx="${x}" cy="${y}" rx="16" ry="7.5" fill="${c}"/><ellipse cx="${x-4}" cy="${y-2}" rx="6" ry="2.4" fill="#fff" opacity=".6"/>`;
+   case 'swirl':return`<path d="M${x-22} ${y} q10 -10 22 -4 q12 6 0 10 q-10 4 -14 -2" stroke="${c}" stroke-width="3.5" fill="none" stroke-linecap="round" opacity=".95"/>`;
+   case 'avo':return`<ellipse cx="${x}" cy="${y}" rx="${v==='board'?28:18}" ry="${v==='board'?16:10}" fill="${c}"/><ellipse cx="${x}" cy="${y}" rx="${v==='board'?20:11}" ry="${v==='board'?10:6}" fill="${l}"/>`;
+   case 'bread':return`<path d="M${x-36} ${y+22} L${x-36} ${y-10} Q${x-36} ${y-30} ${x-18} ${y-30} Q${x-6} ${y-38} ${x+8} ${y-30} Q${x+36} ${y-34} ${x+36} ${y-10} L${x+36} ${y+22}Z" fill="${c}"/><path d="M${x-30} ${y+17} L${x-30} ${y-8} Q${x-30} ${y-24} ${x-16} ${y-24} Q${x-6} ${y-31} ${x+8} ${y-24} Q${x+30} ${y-28} ${x+30} ${y-8} L${x+30} ${y+17}Z" fill="#b98656"/>`+[...Array(10)].map(()=>`<ellipse cx="${(x-24+rnd()*48).toFixed(1)}" cy="${(y-18+rnd()*32).toFixed(1)}" rx="2" ry="1.2" fill="#8a5a33"/>`).join('');
+   case 'cottage':return[...Array(14)].map(()=>`<circle cx="${(x-20+rnd()*40).toFixed(1)}" cy="${(y-16+rnd()*28).toFixed(1)}" r="${(3+rnd()*2.5).toFixed(1)}" fill="${c}" stroke="#e8e3d4"/>`).join('');
+   case 'rusk':case 'toast':return`<rect x="${x-26}" y="${y-20}" width="52" height="40" rx="8" fill="${d}"/><rect x="${x-21}" y="${y-15}" width="42" height="30" rx="5" fill="${t==='rusk'?l:'#f2d9a6'}"/>`;
+   case 'cookie':{const a=rnd()*6.28,r=rnd()*.7;const px=cx+Math.cos(a)*rx*r,py=cy+Math.sin(a)*ry*r;return`<ellipse cx="${px.toFixed(1)}" cy="${(py+2).toFixed(1)}" rx="17" ry="11" fill="${d}"/><ellipse cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" rx="16" ry="10" fill="${c}"/>`+[...Array(5)].map(()=>`<circle cx="${(px-10+rnd()*20).toFixed(1)}" cy="${(py-6+rnd()*12).toFixed(1)}" r="1.8" fill="#5a3a20"/>`).join('')}
+  }
+  return'';
+ }
+ function small(t,c,x,y,rot){
+  const X=x.toFixed(1),Y=y.toFixed(1),R=rot.toFixed(0),d=sh(c,-.15),l=sh(c,.15);
+  switch(t){
+   case 'shine':return`<ellipse cx="${X}" cy="${Y}" rx="${(6+rot/30).toFixed(1)}" ry="1.6" fill="${c}" opacity=".7"/>`;
+   case 'grain':return`<ellipse cx="${X}" cy="${Y}" rx="3" ry="1.5" fill="${c}" transform="rotate(${R} ${X} ${Y})"/>`;
+   case 'dust':case 'cheese':return`<circle cx="${X}" cy="${Y}" r="1.3" fill="${c}"/>`;
+   case 'seed':return`<circle cx="${X}" cy="${Y}" r="1" fill="${c}"/>`;
+   case 'herb':return`<rect x="${X}" y="${Y}" width="4" height="1.6" rx=".8" fill="${c}" transform="rotate(${R} ${X} ${Y})"/>`;
+   case 'scramble':return`<path d="M${x-13} ${y} q3 -11 13 -10 q13 -1 13 8 q-2 10 -13 10 q-11 1 -13 -8Z" fill="${c}" stroke="${d}" stroke-width=".8"/>`;
+   case 'noodle':return`<path d="M${X} ${Y} q6 -5 12 0 q6 5 12 0" stroke="${c}" stroke-width="2.6" fill="none" stroke-linecap="round" transform="rotate(${(rot/6).toFixed(0)} ${X} ${Y})"/>`;
+   case 'slice':return`<circle cx="${X}" cy="${Y}" r="6" fill="${c}"/><circle cx="${X}" cy="${Y}" r="3.6" fill="${l}"/>`;
+   case 'meat':return`<rect x="${(x-11).toFixed(1)}" y="${(y-4).toFixed(1)}" width="22" height="9" rx="4" fill="${c}" stroke="${d}" stroke-width=".8" transform="rotate(${(rot/4-20).toFixed(0)} ${X} ${Y})"/>`;
+   case 'cube':return`<rect x="${(x-3.5).toFixed(1)}" y="${(y-3.5).toFixed(1)}" width="7" height="7" rx="1.6" fill="${c}" stroke="${d}" stroke-width=".6" transform="rotate(${R} ${X} ${Y})"/>`;
+   case 'stick':return`<rect x="${(x-13).toFixed(1)}" y="${(y-2.5).toFixed(1)}" width="26" height="5" rx="2.5" fill="${c}" stroke="${d}" stroke-width=".6" transform="rotate(${R} ${X} ${Y})"/>`;
+   case 'lemon':return`<path d="M${x+40} ${y-6} a12 12 0 0 1 0 22Z" fill="${c}" stroke="#e0b92a"/>`;
+   case 'leaf':return`<path d="M${X} ${Y} q8 -8 16 0 q-8 8 -16 0Z" fill="${c}" transform="rotate(${R} ${X} ${Y})"/>`;
+   case 'berry':return`<circle cx="${X}" cy="${Y}" r="4.6" fill="${c}"/><circle cx="${(x-1.4).toFixed(1)}" cy="${(y-1.6).toFixed(1)}" r="1.3" fill="#fff" opacity=".5"/>`;
+   case 'nut':return`<ellipse cx="${X}" cy="${Y}" rx="5.5" ry="3.6" fill="${c}" stroke="${d}" stroke-width=".8" transform="rotate(${R} ${X} ${Y})"/>`;
+   case 'bean':return`<ellipse cx="${X}" cy="${Y}" rx="5" ry="3" fill="${c}" stroke="${d}" stroke-width=".6" transform="rotate(${R} ${X} ${Y})"/>`;
+   case 'dot':return`<circle cx="${X}" cy="${Y}" r="3.2" fill="${c}" stroke="${d}" stroke-width=".5"/>`;
+   case 'eggslice':return`<circle cx="${X}" cy="${Y}" r="7" fill="${c}" stroke="#e6e1d3"/><circle cx="${X}" cy="${Y}" r="3.6" fill="#f6c343"/>`;
+   case 'broc':return`<rect x="${(x-2).toFixed(1)}" y="${Y}" width="4" height="9" fill="#7fae5a"/><circle cx="${(x-5).toFixed(1)}" cy="${Y}" r="5" fill="${c}"/><circle cx="${(x+5).toFixed(1)}" cy="${Y}" r="5" fill="${c}"/><circle cx="${X}" cy="${(y-5).toFixed(1)}" r="5.4" fill="${l}"/>`;
+   case 'pop':return`<circle cx="${X}" cy="${Y}" r="5" fill="${c}" stroke="#e7d9b0"/><circle cx="${(x+4).toFixed(1)}" cy="${(y-3).toFixed(1)}" r="4" fill="${c}" stroke="#e7d9b0"/><circle cx="${(x-3).toFixed(1)}" cy="${(y-4).toFixed(1)}" r="3.4" fill="${c}" stroke="#e7d9b0"/>`;
+  }
+  return'';
+ }
+}
+
+</script>
+<script>
 {
 const PH={1:'Phase 1 · Schub',2:'Phase 2 · Aufbau',3:'Phase 3 · Alltag'};
 const INTRO={
- all:'<div class="intro">Drei Phasen: erst <b>schonen</b>, dann <b>aufbauen</b>, dann dauerhaft <b>ballaststoffreich</b> essen. Alle Rezepte für 2 Portionen. Tippe auf ein Rezept, um es zu öffnen.</div>',
+ all:'<div class="intro">Drei Phasen: erst <b>schonen</b>, dann <b>aufbauen</b>, dann dauerhaft <b>ballaststoffreich</b> essen. 55 Rezepte für je 2 Portionen. Tippe auf ein Rezept, um es zu öffnen. Die Bilder sind Zeichnungen und zeigen, wie das Gericht ungefähr aussieht.</div>',
  1:'<div class="intro warn"><b>Akuter Schub (erste 1–3 Tage):</b> wenig essen, mindestens 2 Liter trinken. Nur klare Flüssigkeiten und sehr leichte Kost. Bei leichten Schüben ist oft keine strenge Diät nötig – Arzt fragen.</div>',
  2:'<div class="intro"><b>Aufbaukost (ca. 1–4 Wochen):</b> ballaststoff- und fettarm. Gemüse geschält und weich gekocht, nichts Scharfes oder Blähendes. Jeden Tag nur ein neues Lebensmittel testen.</div>',
  3:'<div class="intro"><b>Dauerernährung:</b> Ziel ca. 30 g Ballaststoffe am Tag, langsam über 2–3 Wochen steigern, 1,5–2 Liter trinken. Nüsse, Samen, Körner und Popcorn sind erlaubt. Wenig rotes Fleisch.</div>'
 };
-const R=[
- {p:1,n:'Klare Gemüsebrühe',t:'50 Min',z:['1 Karotte','1 Stück Sellerie','1 Stange Lauch (nur das Helle)','1,5 l Wasser','1 Lorbeerblatt, wenig Salz'],s:['Gemüse grob schneiden, mit Wasser und Lorbeer aufkochen.','45 Minuten leise köcheln lassen.','Durch ein feines Sieb gießen – nur die klare Brühe trinken.']},
- {p:1,n:'Hühnerbrühe',t:'70 Min',z:['1 Hähnchenschenkel ohne Haut','1 Karotte','1 Stück Sellerie','1,5 l Wasser, Salz'],s:['Alles aufkochen, Schaum abschöpfen, 1 Stunde köcheln.','Absieben und Fett von der Oberfläche abnehmen.']},
- {p:1,n:'Haferschleim',t:'12 Min',z:['4 EL zarte Haferflocken','400 ml Wasser','1 Prise Salz'],s:['Haferflocken im Wasser 10 Minuten kochen.','Durch ein Sieb streichen, warm in kleinen Schlucken essen.']},
- {p:1,n:'Weitere leichte Optionen',t:'–',z:['Kamillen- oder Fencheltee, stilles Wasser','Zwieback, Salzstangen','Apfelmus ohne Stücke','Apfelsaft 1:2 mit Wasser verdünnt'],s:[]},
- {p:2,n:'Grießbrei mit Apfelmus',t:'10 Min',z:['400 ml fettarme Milch','50 g Weichweizengrieß','1 TL Honig','4 EL Apfelmus'],s:['Milch aufkochen, Grieß einrieseln lassen, 3 Minuten unter Rühren quellen lassen.','Mit Honig süßen, Apfelmus dazu.']},
- {p:2,n:'Karotten-Kartoffel-Suppe',t:'30 Min',z:['300 g Kartoffeln','300 g Karotten','700 ml Gemüsebrühe','1 EL Rapsöl','Salz, etwas Muskat'],s:['Kartoffeln und Karotten schälen, würfeln, im Öl kurz anschwitzen.','Brühe dazu, 20 Minuten weich kochen.','Fein pürieren, mit Salz und Muskat abschmecken.']},
- {p:2,n:'Hähnchen mit Kartoffelpüree und Karotten',t:'35 Min',z:['250 g Hähnchenbrust','500 g mehligkochende Kartoffeln','250 g Karotten','100 ml fettarme Milch','1 TL Butter, Salz'],s:['Kartoffeln schälen, 20 Minuten kochen, mit warmer Milch und Butter stampfen.','Karotten schälen, in Scheiben in wenig Wasser weich dünsten.','Hähnchen in Brühe 15 Minuten gar ziehen lassen (nicht braten), in Scheiben schneiden.']},
- {p:2,n:'Gedünsteter Fisch mit Reis und Zucchini',t:'25 Min',z:['2 Seelachs- oder Kabeljaufilets (je 150 g)','120 g weißer Reis','1 Zucchini, geschält, ohne Kerne','etwas Zitrone, Salz'],s:['Reis nach Packung kochen.','Zucchini würfeln und 5 Minuten dämpfen.','Fisch salzen, in der Pfanne mit 3 EL Wasser und Deckel 8 Minuten garen.']},
- {p:2,n:'Leichte Abendbrote',t:'5 Min',z:['Weißbrot oder Toast mit Frischkäse, Putenbrust oder mildem Käse','Banane, Naturjoghurt','Rührei mit wenig Fett'],s:[]},
- {p:3,n:'Overnight Oats mit Beeren und Leinsamen',t:'5 Min + Nacht',z:['80 g Haferflocken','250 ml Milch oder Haferdrink','150 g Naturjoghurt','2 EL geschrotete Leinsamen','150 g Beeren (auch TK)','1 TL Honig'],s:['Haferflocken, Milch, Joghurt und Leinsamen verrühren, über Nacht in den Kühlschrank.','Morgens Beeren und Honig darüber.']},
- {p:3,n:'Vollkornbrot mit Hüttenkäse und Gemüse',t:'5 Min',z:['4 Scheiben Vollkornbrot','200 g Hüttenkäse','Gurke, Tomate, Radieschen, Schnittlauch'],s:['Brot mit Hüttenkäse bestreichen, Gemüse in Scheiben darauf, mit Schnittlauch bestreuen.']},
- {p:3,n:'Linsen-Gemüse-Eintopf',t:'30 Min',z:['150 g rote Linsen','1 Zwiebel','2 Karotten','2 Kartoffeln','1 Dose Tomaten','800 ml Gemüsebrühe','1 EL Olivenöl, Kreuzkümmel, Salz, Pfeffer'],s:['Zwiebel, Karotten, Kartoffeln würfeln und im Öl anschwitzen.','Linsen, Tomaten und Brühe dazu, 20 Minuten köcheln.','Mit Gewürzen abschmecken.']},
- {p:3,n:'Vollkornpasta mit Gemüse-Tomatensauce',t:'25 Min',z:['200 g Vollkornspaghetti','1 Zucchini','1 Paprika','1 Zwiebel, 1 Knoblauchzehe','1 Dose gehackte Tomaten','1 EL Olivenöl, Basilikum, Parmesan'],s:['Nudeln nach Packung kochen.','Gemüse würfeln, in Öl anbraten, Tomaten dazu, 10 Minuten köcheln.','Mit Basilikum würzen, mit Parmesan servieren.']},
- {p:3,n:'Lachs mit Ofengemüse und Quinoa',t:'35 Min',z:['2 Lachsfilets','120 g Quinoa','1 Brokkoli','1 Süßkartoffel','2 EL Olivenöl, Zitrone, Salz, Pfeffer'],s:['Süßkartoffel würfeln, Brokkoli in Röschen, mit Öl bei 200 °C 15 Minuten backen.','Lachs dazulegen, weitere 12 Minuten backen.','Quinoa nach Packung kochen, alles mit Zitrone servieren.']},
- {p:3,n:'Kichererbsen-Curry',t:'30 Min',z:['1 Dose Kichererbsen','1 Dose Kokosmilch (light)','200 g Spinat','1 Zwiebel, 1 Stück Ingwer','2 TL Currypulver','120 g Naturreis'],s:['Zwiebel und Ingwer anbraten, Curry kurz mitrösten.','Kichererbsen und Kokosmilch dazu, 10 Minuten köcheln, Spinat unterheben.','Mit Naturreis servieren.']},
- {p:3,n:'Bunter Bohnensalat',t:'10 Min + 30 Min ziehen',z:['1 Dose Kidneybohnen','1 Dose weiße Bohnen','1 rote Zwiebel','1 Paprika','3 EL Olivenöl, 2 EL Essig','Petersilie, Salz, Pfeffer'],s:['Bohnen abspülen, Gemüse klein schneiden.','Mit Öl, Essig und Gewürzen mischen, 30 Minuten ziehen lassen.']},
- {p:3,n:'Gemüse-Omelett mit Vollkornbrot',t:'15 Min',z:['4 Eier','1 Handvoll Spinat','4 Champignons','1 Tomate','2 Scheiben Vollkornbrot'],s:['Gemüse kurz anbraten, verquirlte Eier darübergießen, bei kleiner Hitze stocken lassen.']},
- {p:3,n:'Snacks für zwischendurch',t:'–',z:['Eine Handvoll Nüsse oder Mandeln','Apfel oder Birne mit Schale','Popcorn, selbst gemacht, wenig Salz','Gemüsesticks mit Hummus','Getrocknete Pflaumen oder Feigen'],s:[]}
-];
+
 const AMP=[
  ['Getreide','Vollkornbrot, Haferflocken, Naturreis, Vollkornnudeln, Quinoa','Weißbrot, helle Nudeln',''],
  ['Gemüse & Obst','fast alles, gern mit Schale','sehr blähende Sorten (Kohl, Zwiebeln) je nach Verträglichkeit',''],
@@ -163,17 +324,22 @@ const SHOP=['Haferflocken, Leinsamen, Vollkornbrot','Vollkornnudeln, Naturreis, 
 
 const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-let phase=store.get('dk-phase','all');
+let phase=store.get('dk-phase','all');let cat='Alle';
+const CATS=['Alle','Frühstück','Suppe','Brei','Hauptgericht','Salat','Abendessen','Snack','Getränk'];
+const catsEl=document.getElementById('cats');
+function drawCats(){const have=new Set(R.filter(r=>phase=='all'||r.p==phase).map(r=>r.k));if(cat!=='Alle'&&!have.has(cat))cat='Alle';catsEl.innerHTML=CATS.filter(c=>c==='Alle'||have.has(c)).map(c=>`<button data-c="${c}" aria-pressed="${c===cat}">${c}</button>`).join('')}
+catsEl.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;cat=b.dataset.c;drawCats();draw()});
 const tabs=document.getElementById('tabs'),list=document.getElementById('list'),q=document.getElementById('q'),intro=document.getElementById('intro');
 const TABS=[['all','Alle'],['1','Schub'],['2','Aufbau'],['3','Alltag']];
 function drawTabs(){tabs.innerHTML=TABS.map(([k,l])=>`<button role="tab" data-k="${k}" aria-selected="${k==phase}">${l}</button>`).join('')}
 function draw(){
  const term=q.value.trim().toLowerCase();
  intro.innerHTML=INTRO[phase];
- const rows=R.filter(r=>(phase=='all'||r.p==phase)&&(!term||(r.n+' '+r.z.join(' ')).toLowerCase().includes(term)));
- list.innerHTML=rows.length?rows.map(r=>`<details class="r"><summary><h3>${esc(r.n)}</h3><span class="badge b${r.p}">${PH[r.p].split(' · ')[1]}</span><span class="meta">${PH[r.p]} · ${esc(r.t)}</span></summary><div class="body"><h4>Zutaten</h4><ul>${r.z.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>${r.s.length?`<h4>Zubereitung</h4><ol>${r.s.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`:''}</div></details>`).join(''):'<p class="empty">Kein Rezept gefunden. Andere Zutat versuchen?</p>';
+ const rows=R.filter(r=>(phase=='all'||r.p==phase)&&(cat=='Alle'||r.k==cat)&&(!term||(r.n+' '+r.k+' '+r.z.join(' ')).toLowerCase().includes(term)));
+ document.getElementById('count').textContent=rows.length+(rows.length===1?' Rezept':' Rezepte');
+ list.innerHTML=rows.length?rows.map(r=>`<details class="r" data-i="${R.indexOf(r)}"><summary><div class="thumb">${dish(r.i,R.indexOf(r)+1)}</div><h3>${esc(r.n)}</h3><span class="badge b${r.p}">${PH[r.p].split(' · ')[1]}</span><span class="meta">${esc(r.k)} · ${esc(r.t)}</span></summary><div class="body"><div class="hero">${dish(r.i,R.indexOf(r)+1)}</div><h4>Zutaten (2 Portionen)</h4><ul>${r.z.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>${r.s.length?`<h4>Zubereitung</h4><ol>${r.s.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`:''}</div></details>`).join(''):'<p class="empty">Kein Rezept gefunden. Andere Zutat versuchen?</p>';
 }
-tabs.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;phase=b.dataset.k;store.set('dk-phase',phase);drawTabs();draw()});
+tabs.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;phase=b.dataset.k;store.set('dk-phase',phase);drawTabs();drawCats();draw()});
 q.addEventListener('input',draw);
 document.getElementById('amp').innerHTML=AMP.map(a=>`<tr><td><b>${a[0]}</b></td><td class="g">${a[1]}</td><td class="y">${a[2]}</td><td class="rd">${a[3]}</td></tr>`).join('');
 document.getElementById('wp').innerHTML=WP.map(w=>`<tr>${w.map((c,i)=>i?`<td>${c}</td>`:`<td><b>${c}</b></td>`).join('')}</tr>`).join('');
@@ -182,7 +348,7 @@ const shop=document.getElementById('shop');
 function drawShop(){shop.innerHTML=SHOP.map((s,i)=>`<label><input type="checkbox" data-i="${i}" ${done.includes(i)?'checked':''}><span>${s}</span></label>`).join('')}
 shop.addEventListener('change',e=>{const i=+e.target.dataset.i;done=e.target.checked?[...done,i]:done.filter(x=>x!==i);store.set('dk-shop',done)});
 document.getElementById('reset').addEventListener('click',()=>{done=[];store.set('dk-shop',done);drawShop()});
-drawTabs();draw();drawShop();
+drawTabs();drawCats();draw();drawShop();
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 }
 </script>
