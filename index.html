@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Divertikulitis Kochbuch</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="theme-color" content="#2f5d34">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kochbuch">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: ruhig, freundlich, praktisch – ein Rezeptheft für jeden Tag
+   IDEA: ein Karteikasten mit Rezeptkarten, nach Phasen sortiert
+   PICTURE: gezeichnete Suppenschüssel mit Gemüse oben, darunter die Karten selbst
+   COLOUR and TYPE: warmes Weiß, tiefes Olivgrün, Tomatenrot als Akzent; Fraunces + Figtree
+   LAYOUT: eine Spalte, Phasen-Tabs, Suche, aufklappbare Karten, Extras unten */
+:root{color-scheme:light dark;
+--bg:light-dark(#fbf8f1,#141a14);--card:light-dark(#ffffff,#1d251d);--ink:light-dark(#1d2a1e,#ebefe6);
+--mute:light-dark(#5a665b,#a7b3a6);--green:light-dark(#2f5d34,#7fb685);--greenbg:light-dark(#e6efe2,#243325);
+--red:light-dark(#c8402b,#ef7a62);--line:light-dark(#e3ddcf,#2d3a2e);--p1:light-dark(#fde9c8,#3a3020);--p2:light-dark(#e2ecf7,#1f2b38);--p3:light-dark(#e6efe2,#243325)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Figtree,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;line-height:1.1;text-wrap:balance;margin:0}
+.wrap{max-width:760px;margin:0 auto;padding:0 max(4vw,16px)}
+header{background:var(--green);color:#fff;padding:28px 0 0;overflow:hidden}
+header .wrap{display:grid;grid-template-columns:1fr 160px;gap:16px;align-items:end}
+header h1{font-size:clamp(30px,7vw,44px)}
+header p{margin:8px 0 20px;opacity:.9;font-size:15px}
+header svg{width:160px;height:120px;display:block}
+nav.tabs{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+nav.tabs .wrap{display:flex;gap:6px;overflow-x:auto;padding-top:10px;padding-bottom:10px}
+nav.tabs button{flex:none;min-height:44px;padding:0 16px;border-radius:22px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 15px Figtree,sans-serif;cursor:pointer}
+nav.tabs button[aria-selected=true]{background:var(--green);color:#fff;border-color:var(--green)}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.search{margin:16px 0 6px;display:block;width:100%;min-height:48px;font:16px Figtree,sans-serif;padding:0 16px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.intro{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:12px 0;font-size:15px}
+.intro b{color:var(--green)}
+.warn{border-left:4px solid var(--red)}
+details.r{background:var(--card);border:1px solid var(--line);border-radius:14px;margin:10px 0;overflow:hidden}
+details.r summary{list-style:none;cursor:pointer;padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center;min-height:56px}
+details.r summary::-webkit-details-marker{display:none}
+details.r summary h3{font-size:19px}
+.meta{grid-column:1/-1;font-size:13px;color:var(--mute)}
+.badge{font-size:13px;font-weight:700;padding:3px 10px;border-radius:12px;white-space:nowrap}
+.b1{background:var(--p1)}.b2{background:var(--p2)}.b3{background:var(--p3);color:var(--green)}
+.body{padding:0 16px 16px;border-top:1px dashed var(--line)}
+.body h4{margin:14px 0 4px;font-size:14px;color:var(--green)}
+.body ul,.body ol{margin:0;padding-left:22px}.body li{margin:3px 0}
+.empty{text-align:center;color:var(--mute);padding:30px 0}
+section.extra{padding:20px 0}
+section.extra h2{font-size:26px;margin:10px 0 12px}
+table{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;overflow:hidden;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--greenbg);color:var(--green)}
+.g{color:var(--green);font-weight:700}.y{color:light-dark(#9a6a00,#e8b84a);font-weight:700}.rd{color:var(--red);font-weight:700}
+.shop label{display:flex;gap:12px;align-items:center;min-height:48px;padding:6px 14px;background:var(--card);border:1px solid var(--line);border-radius:12px;margin:6px 0;cursor:pointer}
+.shop input{width:22px;height:22px;accent-color:var(--green);flex:none}
+.shop input:checked+span{text-decoration:line-through;color:var(--mute)}
+.reset{min-height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--ink);font:600 14px Figtree,sans-serif;cursor:pointer}
+footer{padding:24px 0 40px;font-size:13px;color:var(--mute)}
+footer a{color:var(--green)}
+@media(max-width:600px){header .wrap{grid-template-columns:1fr 100px}header svg{width:100px;height:80px}table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:8em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-8em;white-space:normal;font-weight:700;color:var(--green)}.stack td:empty{display:none}}
+@media(prefers-reduced-motion:no-preference){details.r[open] .body{animation:in .25s ease}@keyframes in{from{opacity:0;transform:translateY(-4px)}}}
+</style>
+<script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script>
+</head>
+<body>
+<header><div class="wrap">
+  <div><h1>Mein Divertikulitis-Kochbuch</h1><p>Rezepte für Schub, Aufbau und Alltag</p></div>
+  <svg viewBox="0 0 160 120" aria-hidden="true">
+    <ellipse cx="80" cy="112" rx="62" ry="6" fill="#000" opacity=".18"/>
+    <path d="M78 52c-6-14 4-26 2-38" stroke="#fff" stroke-width="3" fill="none" opacity=".5" stroke-linecap="round"/>
+    <path d="M98 50c-5-10 3-18 1-28" stroke="#fff" stroke-width="3" fill="none" opacity=".4" stroke-linecap="round"/>
+    <path d="M60 50c-4-9 3-16 1-24" stroke="#fff" stroke-width="3" fill="none" opacity=".35" stroke-linecap="round"/>
+    <path d="M18 60h124c0 30-26 50-62 50S18 90 18 60z" fill="#fbf8f1"/>
+    <path d="M18 60h124c-2 8-6 15-12 21H30c-6-6-10-13-12-21z" fill="#e8dfcc"/>
+    <ellipse cx="80" cy="60" rx="62" ry="9" fill="#f2b24a"/>
+    <circle cx="58" cy="58" r="6" fill="#e86a2b"/><circle cx="96" cy="60" r="5" fill="#e86a2b"/>
+    <circle cx="78" cy="57" r="4" fill="#7fb685"/><circle cx="110" cy="57" r="3.5" fill="#7fb685"/><circle cx="44" cy="60" r="3" fill="#7fb685"/>
+    <rect x="120" y="22" width="6" height="46" rx="3" transform="rotate(25 123 45)" fill="#c8402b"/>
+  </svg>
+</div></header>
+
+<nav class="tabs"><div class="wrap" role="tablist" id="tabs"></div></nav>
+
+<main class="wrap">
+  <input class="search" id="q" type="search" placeholder="Rezept oder Zutat suchen …" aria-label="Rezepte durchsuchen">
+  <div id="intro"></div>
+  <div id="list"></div>
+
+  <section class="extra" id="ampel">
+    <h2>Lebensmittel-Ampel (Phase 3)</h2>
+    <table class="stack"><thead><tr><th>Gruppe</th><th>Gut</th><th>In Maßen</th><th>Meiden</th></tr></thead><tbody id="amp"></tbody></table>
+  </section>
+
+  <section class="extra" id="woche">
+    <h2>Wochenplan (Phase 3)</h2>
+    <table class="stack"><thead><tr><th>Tag</th><th>Frühstück</th><th>Mittag</th><th>Abend</th></tr></thead><tbody id="wp"></tbody></table>
+  </section>
+
+  <section class="extra shop" id="einkauf">
+    <h2>Einkaufsliste</h2>
+    <div id="shop"></div>
+    <button class="reset" id="reset">Alle Häkchen entfernen</button>
+  </section>
+</main>
+
+<footer class="wrap">
+  <p><b>Sofort zum Arzt</b> bei Fieber, starken Bauchschmerzen (meist links unten), Blut im Stuhl oder Erbrechen. Wie lange Phase 1 und 2 dauern, entscheidet der Arzt.</p>
+  <p>Quellen: <a href="https://www.doccheck.com/de/detail/articles/29837-mythos-divertikelkrankheit-sind-samen-und-koerner-tabu">DocCheck (S2k-Leitlinie)</a> · <a href="https://www.gesundheitsinformation.de/behandlung-der-chronischen-divertikelkrankheit.html">gesundheitsinformation.de</a> · <a href="https://www.pharmazeutische-zeitung.de/die-grosse-unbekannte-im-darm-157759/seite/2/">Pharmazeutische Zeitung</a>. Ersetzt keine ärztliche Beratung.</p>
+</footer>
+
+<script>
+{
+const PH={1:'Phase 1 · Schub',2:'Phase 2 · Aufbau',3:'Phase 3 · Alltag'};
+const INTRO={
+ all:'<div class="intro">Drei Phasen: erst <b>schonen</b>, dann <b>aufbauen</b>, dann dauerhaft <b>ballaststoffreich</b> essen. Alle Rezepte für 2 Portionen. Tippe auf ein Rezept, um es zu öffnen.</div>',
+ 1:'<div class="intro warn"><b>Akuter Schub (erste 1–3 Tage):</b> wenig essen, mindestens 2 Liter trinken. Nur klare Flüssigkeiten und sehr leichte Kost. Bei leichten Schüben ist oft keine strenge Diät nötig – Arzt fragen.</div>',
+ 2:'<div class="intro"><b>Aufbaukost (ca. 1–4 Wochen):</b> ballaststoff- und fettarm. Gemüse geschält und weich gekocht, nichts Scharfes oder Blähendes. Jeden Tag nur ein neues Lebensmittel testen.</div>',
+ 3:'<div class="intro"><b>Dauerernährung:</b> Ziel ca. 30 g Ballaststoffe am Tag, langsam über 2–3 Wochen steigern, 1,5–2 Liter trinken. Nüsse, Samen, Körner und Popcorn sind erlaubt. Wenig rotes Fleisch.</div>'
+};
+const R=[
+ {p:1,n:'Klare Gemüsebrühe',t:'50 Min',z:['1 Karotte','1 Stück Sellerie','1 Stange Lauch (nur das Helle)','1,5 l Wasser','1 Lorbeerblatt, wenig Salz'],s:['Gemüse grob schneiden, mit Wasser und Lorbeer aufkochen.','45 Minuten leise köcheln lassen.','Durch ein feines Sieb gießen – nur die klare Brühe trinken.']},
+ {p:1,n:'Hühnerbrühe',t:'70 Min',z:['1 Hähnchenschenkel ohne Haut','1 Karotte','1 Stück Sellerie','1,5 l Wasser, Salz'],s:['Alles aufkochen, Schaum abschöpfen, 1 Stunde köcheln.','Absieben und Fett von der Oberfläche abnehmen.']},
+ {p:1,n:'Haferschleim',t:'12 Min',z:['4 EL zarte Haferflocken','400 ml Wasser','1 Prise Salz'],s:['Haferflocken im Wasser 10 Minuten kochen.','Durch ein Sieb streichen, warm in kleinen Schlucken essen.']},
+ {p:1,n:'Weitere leichte Optionen',t:'–',z:['Kamillen- oder Fencheltee, stilles Wasser','Zwieback, Salzstangen','Apfelmus ohne Stücke','Apfelsaft 1:2 mit Wasser verdünnt'],s:[]},
+ {p:2,n:'Grießbrei mit Apfelmus',t:'10 Min',z:['400 ml fettarme Milch','50 g Weichweizengrieß','1 TL Honig','4 EL Apfelmus'],s:['Milch aufkochen, Grieß einrieseln lassen, 3 Minuten unter Rühren quellen lassen.','Mit Honig süßen, Apfelmus dazu.']},
+ {p:2,n:'Karotten-Kartoffel-Suppe',t:'30 Min',z:['300 g Kartoffeln','300 g Karotten','700 ml Gemüsebrühe','1 EL Rapsöl','Salz, etwas Muskat'],s:['Kartoffeln und Karotten schälen, würfeln, im Öl kurz anschwitzen.','Brühe dazu, 20 Minuten weich kochen.','Fein pürieren, mit Salz und Muskat abschmecken.']},
+ {p:2,n:'Hähnchen mit Kartoffelpüree und Karotten',t:'35 Min',z:['250 g Hähnchenbrust','500 g mehligkochende Kartoffeln','250 g Karotten','100 ml fettarme Milch','1 TL Butter, Salz'],s:['Kartoffeln schälen, 20 Minuten kochen, mit warmer Milch und Butter stampfen.','Karotten schälen, in Scheiben in wenig Wasser weich dünsten.','Hähnchen in Brühe 15 Minuten gar ziehen lassen (nicht braten), in Scheiben schneiden.']},
+ {p:2,n:'Gedünsteter Fisch mit Reis und Zucchini',t:'25 Min',z:['2 Seelachs- oder Kabeljaufilets (je 150 g)','120 g weißer Reis','1 Zucchini, geschält, ohne Kerne','etwas Zitrone, Salz'],s:['Reis nach Packung kochen.','Zucchini würfeln und 5 Minuten dämpfen.','Fisch salzen, in der Pfanne mit 3 EL Wasser und Deckel 8 Minuten garen.']},
+ {p:2,n:'Leichte Abendbrote',t:'5 Min',z:['Weißbrot oder Toast mit Frischkäse, Putenbrust oder mildem Käse','Banane, Naturjoghurt','Rührei mit wenig Fett'],s:[]},
+ {p:3,n:'Overnight Oats mit Beeren und Leinsamen',t:'5 Min + Nacht',z:['80 g Haferflocken','250 ml Milch oder Haferdrink','150 g Naturjoghurt','2 EL geschrotete Leinsamen','150 g Beeren (auch TK)','1 TL Honig'],s:['Haferflocken, Milch, Joghurt und Leinsamen verrühren, über Nacht in den Kühlschrank.','Morgens Beeren und Honig darüber.']},
+ {p:3,n:'Vollkornbrot mit Hüttenkäse und Gemüse',t:'5 Min',z:['4 Scheiben Vollkornbrot','200 g Hüttenkäse','Gurke, Tomate, Radieschen, Schnittlauch'],s:['Brot mit Hüttenkäse bestreichen, Gemüse in Scheiben darauf, mit Schnittlauch bestreuen.']},
+ {p:3,n:'Linsen-Gemüse-Eintopf',t:'30 Min',z:['150 g rote Linsen','1 Zwiebel','2 Karotten','2 Kartoffeln','1 Dose Tomaten','800 ml Gemüsebrühe','1 EL Olivenöl, Kreuzkümmel, Salz, Pfeffer'],s:['Zwiebel, Karotten, Kartoffeln würfeln und im Öl anschwitzen.','Linsen, Tomaten und Brühe dazu, 20 Minuten köcheln.','Mit Gewürzen abschmecken.']},
+ {p:3,n:'Vollkornpasta mit Gemüse-Tomatensauce',t:'25 Min',z:['200 g Vollkornspaghetti','1 Zucchini','1 Paprika','1 Zwiebel, 1 Knoblauchzehe','1 Dose gehackte Tomaten','1 EL Olivenöl, Basilikum, Parmesan'],s:['Nudeln nach Packung kochen.','Gemüse würfeln, in Öl anbraten, Tomaten dazu, 10 Minuten köcheln.','Mit Basilikum würzen, mit Parmesan servieren.']},
+ {p:3,n:'Lachs mit Ofengemüse und Quinoa',t:'35 Min',z:['2 Lachsfilets','120 g Quinoa','1 Brokkoli','1 Süßkartoffel','2 EL Olivenöl, Zitrone, Salz, Pfeffer'],s:['Süßkartoffel würfeln, Brokkoli in Röschen, mit Öl bei 200 °C 15 Minuten backen.','Lachs dazulegen, weitere 12 Minuten backen.','Quinoa nach Packung kochen, alles mit Zitrone servieren.']},
+ {p:3,n:'Kichererbsen-Curry',t:'30 Min',z:['1 Dose Kichererbsen','1 Dose Kokosmilch (light)','200 g Spinat','1 Zwiebel, 1 Stück Ingwer','2 TL Currypulver','120 g Naturreis'],s:['Zwiebel und Ingwer anbraten, Curry kurz mitrösten.','Kichererbsen und Kokosmilch dazu, 10 Minuten köcheln, Spinat unterheben.','Mit Naturreis servieren.']},
+ {p:3,n:'Bunter Bohnensalat',t:'10 Min + 30 Min ziehen',z:['1 Dose Kidneybohnen','1 Dose weiße Bohnen','1 rote Zwiebel','1 Paprika','3 EL Olivenöl, 2 EL Essig','Petersilie, Salz, Pfeffer'],s:['Bohnen abspülen, Gemüse klein schneiden.','Mit Öl, Essig und Gewürzen mischen, 30 Minuten ziehen lassen.']},
+ {p:3,n:'Gemüse-Omelett mit Vollkornbrot',t:'15 Min',z:['4 Eier','1 Handvoll Spinat','4 Champignons','1 Tomate','2 Scheiben Vollkornbrot'],s:['Gemüse kurz anbraten, verquirlte Eier darübergießen, bei kleiner Hitze stocken lassen.']},
+ {p:3,n:'Snacks für zwischendurch',t:'–',z:['Eine Handvoll Nüsse oder Mandeln','Apfel oder Birne mit Schale','Popcorn, selbst gemacht, wenig Salz','Gemüsesticks mit Hummus','Getrocknete Pflaumen oder Feigen'],s:[]}
+];
+const AMP=[
+ ['Getreide','Vollkornbrot, Haferflocken, Naturreis, Vollkornnudeln, Quinoa','Weißbrot, helle Nudeln',''],
+ ['Gemüse & Obst','fast alles, gern mit Schale','sehr blähende Sorten (Kohl, Zwiebeln) je nach Verträglichkeit',''],
+ ['Eiweiß','Hülsenfrüchte, Fisch, Geflügel, Eier, Joghurt','Käse, Wurst','rotes und verarbeitetes Fleisch'],
+ ['Fette','Olivenöl, Rapsöl, Nüsse, Samen','Butter','Frittiertes, Fast Food'],
+ ['Getränke','Wasser, Tee','Kaffee','viel Alkohol, Limo']
+];
+const WP=[
+ ['Montag','Overnight Oats','Linsen-Gemüse-Eintopf','Vollkornbrot mit Hüttenkäse'],
+ ['Dienstag','Vollkornbrot mit Hüttenkäse','Vollkornpasta mit Gemüsesauce','Bohnensalat'],
+ ['Mittwoch','Overnight Oats','Lachs mit Ofengemüse','Gemüse-Omelett'],
+ ['Donnerstag','Vollkornbrot mit Ei','Rest Linseneintopf','Bohnensalat'],
+ ['Freitag','Overnight Oats','Kichererbsen-Curry','Vollkornbrot mit Gemüse'],
+ ['Samstag','Müsli mit Obst','Vollkornpasta mit Gemüsesauce','Gemüse-Omelett'],
+ ['Sonntag','Vollkornbrot mit Hüttenkäse','Lachs mit Ofengemüse','Rest Curry']
+];
+const SHOP=['Haferflocken, Leinsamen, Vollkornbrot','Vollkornnudeln, Naturreis, Quinoa','Rote Linsen, Kichererbsen, Bohnen (Dosen)','Gehackte Tomaten, Kokosmilch light, Gemüsebrühe','Karotten, Zucchini, Paprika, Brokkoli, Spinat','Zwiebeln, Süßkartoffeln','Beeren (TK), Äpfel, Bananen, Trockenpflaumen','Naturjoghurt, Hüttenkäse, Milch, Eier, Parmesan','Lachs oder Seelachs, Hähnchenbrust','Olivenöl, Rapsöl, Nüsse, Hummus','Kamillen- und Fencheltee, Zwieback (Vorrat)'];
+
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let phase=store.get('dk-phase','all');
+const tabs=document.getElementById('tabs'),list=document.getElementById('list'),q=document.getElementById('q'),intro=document.getElementById('intro');
+const TABS=[['all','Alle'],['1','Schub'],['2','Aufbau'],['3','Alltag']];
+function drawTabs(){tabs.innerHTML=TABS.map(([k,l])=>`<button role="tab" data-k="${k}" aria-selected="${k==phase}">${l}</button>`).join('')}
+function draw(){
+ const term=q.value.trim().toLowerCase();
+ intro.innerHTML=INTRO[phase];
+ const rows=R.filter(r=>(phase=='all'||r.p==phase)&&(!term||(r.n+' '+r.z.join(' ')).toLowerCase().includes(term)));
+ list.innerHTML=rows.length?rows.map(r=>`<details class="r"><summary><h3>${esc(r.n)}</h3><span class="badge b${r.p}">${PH[r.p].split(' · ')[1]}</span><span class="meta">${PH[r.p]} · ${esc(r.t)}</span></summary><div class="body"><h4>Zutaten</h4><ul>${r.z.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>${r.s.length?`<h4>Zubereitung</h4><ol>${r.s.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`:''}</div></details>`).join(''):'<p class="empty">Kein Rezept gefunden. Andere Zutat versuchen?</p>';
+}
+tabs.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;phase=b.dataset.k;store.set('dk-phase',phase);drawTabs();draw()});
+q.addEventListener('input',draw);
+document.getElementById('amp').innerHTML=AMP.map(a=>`<tr><td><b>${a[0]}</b></td><td class="g">${a[1]}</td><td class="y">${a[2]}</td><td class="rd">${a[3]}</td></tr>`).join('');
+document.getElementById('wp').innerHTML=WP.map(w=>`<tr>${w.map((c,i)=>i?`<td>${c}</td>`:`<td><b>${c}</b></td>`).join('')}</tr>`).join('');
+let done=store.get('dk-shop',[]);
+const shop=document.getElementById('shop');
+function drawShop(){shop.innerHTML=SHOP.map((s,i)=>`<label><input type="checkbox" data-i="${i}" ${done.includes(i)?'checked':''}><span>${s}</span></label>`).join('')}
+shop.addEventListener('change',e=>{const i=+e.target.dataset.i;done=e.target.checked?[...done,i]:done.filter(x=>x!==i);store.set('dk-shop',done)});
+document.getElementById('reset').addEventListener('click',()=>{done=[];store.set('dk-shop',done);drawShop()});
+drawTabs();draw();drawShop();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+}
+</script>
+</body>
+</html>
