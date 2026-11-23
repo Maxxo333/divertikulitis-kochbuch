@@ -13,68 +13,114 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 /* VOICE: ruhig, freundlich, praktisch – ein Rezeptheft für jeden Tag
-   IDEA: ein Karteikasten mit Rezeptkarten, nach Phasen sortiert
-   PICTURE: gezeichnete Suppenschüssel mit Gemüse oben, darunter die Karten selbst
-   COLOUR and TYPE: warmes Weiß, tiefes Olivgrün, Tomatenrot als Akzent; Fraunces + Figtree
-   LAYOUT: eine Spalte, Phasen-Tabs, Suche, aufklappbare Karten, Extras unten */
+   IDEA: Karteikasten mit Rezeptkarten plus Wochenplan wie am Kühlschrank
+   PICTURE: gezeichnete Gerichte auf jeder Karte, Suppenschüssel im Kopf
+   COLOUR and TYPE: warmes Weiß, tiefes Olivgrün, Tomatenrot; Fraunces + Figtree
+   LAYOUT: eine Spalte, oben drei Reiter, Phasen, dann Liste oder Tagesablauf */
 :root{color-scheme:light dark;
 --bg:light-dark(#fbf8f1,#141a14);--card:light-dark(#ffffff,#1d251d);--ink:light-dark(#1d2a1e,#ebefe6);
 --mute:light-dark(#5a665b,#a7b3a6);--green:light-dark(#2f5d34,#7fb685);--greenbg:light-dark(#e6efe2,#243325);
---red:light-dark(#c8402b,#ef7a62);--line:light-dark(#e3ddcf,#2d3a2e);--p1:light-dark(#fde9c8,#3a3020);--p2:light-dark(#e2ecf7,#1f2b38);--p3:light-dark(#e6efe2,#243325)}
+--red:light-dark(#c8402b,#ef7a62);--line:light-dark(#e3ddcf,#2d3a2e);--p1:light-dark(#fde9c8,#3a3020);--p2:light-dark(#e2ecf7,#1f2b38);--p3:light-dark(#e6efe2,#243325);--pic:light-dark(#f3efe4,#263026)}
 :root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
 *{box-sizing:border-box;min-width:0}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Figtree,system-ui,sans-serif;overflow-x:clip}
+body.lock{overflow:hidden}
 h1,h2,h3{font-family:Fraunces,Georgia,serif;line-height:1.1;text-wrap:balance;margin:0}
 .wrap{max-width:760px;margin:0 auto;padding:0 max(4vw,16px)}
-header{background:#2f5d34;color:#fff;padding:28px 0 0;overflow:hidden}
-header .wrap{display:grid;grid-template-columns:1fr 160px;gap:16px;align-items:end}
-header h1{font-size:clamp(30px,7vw,44px)}
-header p{margin:8px 0 20px;opacity:.9;font-size:15px}
-header svg{width:160px;height:120px;display:block}
+header{background:#2f5d34;color:#fff;padding:24px 0 0;overflow:hidden}
+header .wrap{display:grid;grid-template-columns:1fr 150px;gap:16px;align-items:end}
+header h1{font-size:clamp(28px,7vw,42px)}
+header p{margin:8px 0 18px;opacity:.9;font-size:15px}
+header svg{width:150px;height:112px;display:block}
+.main-nav{display:flex;background:#2f5d34;border-top:1px solid rgba(255,255,255,.15)}
+.main-nav .wrap{display:flex;gap:4px;width:100%}
+.main-nav button{flex:1;min-height:48px;border:0;background:transparent;color:rgba(255,255,255,.78);font:700 15px Figtree,sans-serif;border-bottom:3px solid transparent;cursor:pointer}
+.main-nav button[aria-selected=true]{color:#fff;border-bottom-color:#f2b24a}
 nav.tabs{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
 nav.tabs .wrap{display:flex;gap:6px;overflow-x:auto;padding-top:10px;padding-bottom:10px}
-nav.tabs button{flex:none;min-height:44px;padding:0 16px;border-radius:22px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 15px Figtree,sans-serif;cursor:pointer}
-nav.tabs button[aria-selected=true]{background:#2f5d34;color:#fff;border-color:#2f5d34}
+.pill{flex:none;min-height:44px;padding:0 16px;border-radius:22px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 15px Figtree,sans-serif;cursor:pointer}
+.pill[aria-selected=true]{background:#2f5d34;color:#fff;border-color:#2f5d34}
 button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--red);outline-offset:2px}
 .search{margin:16px 0 6px;display:block;width:100%;min-height:48px;font:16px Figtree,sans-serif;padding:0 16px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
 .intro{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:12px 0;font-size:15px}
 .intro b{color:var(--green)}
 .warn{border-left:4px solid var(--red)}
+.meals{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:6px 0 4px}
+.meals button{min-height:56px;padding:6px 2px;overflow-wrap:anywhere;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 13px/1.2 Figtree,sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.meals button svg{width:22px;height:22px}
+.meals button[aria-pressed=true]{background:var(--greenbg);color:var(--green);border-color:var(--green)}
+.count{font-size:13px;color:var(--mute);margin:6px 0 0}
+.group{font-size:22px;margin:22px 0 4px;display:flex;align-items:baseline;gap:10px}
+.group small{font:600 13px Figtree,sans-serif;color:var(--mute)}
 details.r{background:var(--card);border:1px solid var(--line);border-radius:14px;margin:10px 0;overflow:hidden}
 details.r summary{list-style:none;cursor:pointer;padding:10px 14px 10px 10px;display:grid;grid-template-columns:96px 1fr auto;gap:2px 12px;align-items:center;min-height:76px}
-.thumb{grid-row:1/3;width:96px;height:64px;border-radius:10px;background:light-dark(#f3efe4,#263026);overflow:hidden}.thumb svg,.hero svg{width:100%;height:100%;display:block}
-.hero{margin:12px 0 4px;border-radius:14px;background:light-dark(#f3efe4,#263026);aspect-ratio:3/2;max-height:300px;overflow:hidden}
-.cats{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 8px}.cats button{min-height:36px;padding:0 12px;border-radius:18px;border:1px solid var(--line);background:transparent;color:var(--ink);font:600 13px Figtree,sans-serif;cursor:pointer}.cats button[aria-pressed=true]{background:var(--greenbg);color:var(--green);border-color:var(--green)}
-.count{font-size:13px;color:var(--mute);margin:4px 0 0}
 details.r summary::-webkit-details-marker{display:none}
-details.r summary h3{font-size:19px}
+details.r summary h3{font-size:18px}
+.thumb{grid-row:1/3;width:96px;height:64px;border-radius:10px;background:var(--pic);overflow:hidden}
+.thumb svg,.hero svg,.wthumb svg{width:100%;height:100%;display:block}
 .meta{grid-column:2/-1;font-size:13px;color:var(--mute)}
-.badge{font-size:13px;font-weight:700;padding:3px 10px;border-radius:12px;white-space:nowrap}
+.badge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;white-space:nowrap}
 .b1{background:var(--p1)}.b2{background:var(--p2)}.b3{background:var(--p3);color:var(--green)}
 .body{padding:0 16px 16px;border-top:1px dashed var(--line)}
+.hero{margin:12px 0 4px;border-radius:14px;background:var(--pic);aspect-ratio:3/2;max-height:300px;overflow:hidden}
 .body h4{margin:14px 0 4px;font-size:14px;color:var(--green)}
 .body ul,.body ol{margin:0;padding-left:22px}.body li{margin:3px 0}
+.when{font-size:13px;color:var(--mute);margin:8px 0 0}
 .empty{text-align:center;color:var(--mute);padding:30px 0}
-section.extra{padding:20px 0}
+/* Wochenplan */
+.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin:14px 0 6px}
+.days button{min-height:52px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:700 15px Figtree,sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
+.days button small{font-weight:600;font-size:11px;color:var(--mute)}
+.days button[aria-pressed=true]{background:#2f5d34;color:#fff;border-color:#2f5d34}.days button[aria-pressed=true] small{color:#d9e8d6}
+.dayhead{font-size:26px;margin:16px 0 2px}
+.daysub{color:var(--mute);font-size:14px;margin:0 0 10px}
+.tl{list-style:none;margin:0;padding:0;position:relative}
+.tl::before{content:"";position:absolute;left:58px;top:12px;bottom:12px;width:2px;background:var(--line)}
+.tl>li{display:grid;grid-template-columns:50px 18px 1fr;gap:0 8px;align-items:start;margin:0 0 12px}
+.time{font:700 15px Figtree,sans-serif;text-align:right;padding-top:10px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.dotm{width:14px;height:14px;border-radius:50%;background:var(--bg);border:3px solid #2f5d34;margin-top:13px;position:relative;z-index:1}
+.tl li.z .dotm{border-color:#f2b24a;width:12px;height:12px;margin-left:1px}
+.tl li.drink .dotm{border-color:#5b9bd5}
+.slot{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 10px}
+.slot .lbl{font-size:13px;font-weight:700;color:var(--green);margin:0 0 4px}
+.tl li.z .slot{background:transparent;border-style:dashed}
+.tl li.drink .slot{background:transparent;border:0;padding:8px 0;color:var(--mute);font-size:14px}
+.wdish{display:grid;grid-template-columns:72px 1fr auto;gap:10px;align-items:center;width:100%;min-height:52px;padding:4px 0;border:0;background:transparent;color:var(--ink);text-align:left;cursor:pointer;font:600 16px/1.25 Figtree,sans-serif}
+.wdish+.wdish{border-top:1px solid var(--line)}
+.wthumb{width:72px;height:48px;border-radius:8px;background:var(--pic);overflow:hidden}
+.wdish .arr{color:var(--mute);font-size:20px}
+/* Rezept-Fenster */
+.sheet{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center}
+.sheet.open{display:flex}
+.sheet .in{background:var(--bg);width:100%;max-width:640px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:14px 18px 28px}
+.sheet .top{display:flex;justify-content:space-between;align-items:center;gap:10px;position:sticky;top:-14px;background:var(--bg);padding:8px 0}
+.sheet h2{font-size:24px}
+.close{min-width:44px;min-height:44px;border-radius:22px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:700 20px Figtree,sans-serif;cursor:pointer}
+.sheet .body{border:0;padding:0}
+/* Tipps */
+section.extra{padding:14px 0}
 section.extra h2{font-size:26px;margin:10px 0 12px}
 table{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;overflow:hidden;font-size:14px}
 th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
 th{background:var(--greenbg);color:var(--green)}
 .g{color:var(--green);font-weight:700}.y{color:light-dark(#9a6a00,#e8b84a);font-weight:700}.rd{color:var(--red);font-weight:700}
 .shop label{display:flex;gap:12px;align-items:center;min-height:48px;padding:6px 14px;background:var(--card);border:1px solid var(--line);border-radius:12px;margin:6px 0;cursor:pointer}
-.shop input{width:22px;height:22px;accent-color:var(--green);flex:none}
+.shop input{width:22px;height:22px;accent-color:#2f5d34;flex:none}
 .shop input:checked+span{text-decoration:line-through;color:var(--mute)}
 .reset{min-height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--ink);font:600 14px Figtree,sans-serif;cursor:pointer}
+.tips li{margin:6px 0}
 footer{padding:24px 0 40px;font-size:13px;color:var(--mute)}
 footer a{color:var(--green)}
-@media(max-width:600px){header .wrap{grid-template-columns:1fr 100px}header svg{width:100px;height:80px}table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:8em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-8em;white-space:normal;font-weight:700;color:var(--green)}.stack td:empty{display:none}}
-@media(prefers-reduced-motion:no-preference){details.r[open] .body{animation:in .25s ease}@keyframes in{from{opacity:0;transform:translateY(-4px)}}}
+[hidden]{display:none!important}
+@media(max-width:600px){header .wrap{grid-template-columns:1fr 96px}header svg{width:96px;height:72px}table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:8em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-8em;white-space:normal;font-weight:700;color:var(--green)}.stack td:empty{display:none}.meals button{font-size:12px}}
+@media(prefers-reduced-motion:no-preference){details.r[open] .body,.sheet.open .in{animation:in .25s ease}@keyframes in{from{opacity:0;transform:translateY(8px)}}}
 </style>
 <script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script>
 </head>
 <body>
-<header><div class="wrap">
-  <div><h1>Mein Divertikulitis-Kochbuch</h1><p>55 Rezepte mit Bildern für Schub, Aufbau und Alltag</p></div>
+<header>
+ <div class="wrap">
+  <div><h1>Mein Divertikulitis-Kochbuch</h1><p>55 Rezepte mit Bildern und Wochenplan</p></div>
   <svg viewBox="0 0 160 120" aria-hidden="true">
     <ellipse cx="80" cy="112" rx="62" ry="6" fill="#000" opacity=".18"/>
     <path d="M78 52c-6-14 4-26 2-38" stroke="#fff" stroke-width="3" fill="none" opacity=".5" stroke-linecap="round"/>
@@ -87,37 +133,64 @@ footer a{color:var(--green)}
     <circle cx="78" cy="57" r="4" fill="#7fb685"/><circle cx="110" cy="57" r="3.5" fill="#7fb685"/><circle cx="44" cy="60" r="3" fill="#7fb685"/>
     <rect x="120" y="22" width="6" height="46" rx="3" transform="rotate(25 123 45)" fill="#c8402b"/>
   </svg>
-</div></header>
+ </div>
+ <nav class="main-nav"><div class="wrap" role="tablist" id="views">
+  <button role="tab" data-v="rezepte">Rezepte</button>
+  <button role="tab" data-v="wochenplan">Wochenplan</button>
+  <button role="tab" data-v="tipps">Tipps &amp; Einkauf</button>
+ </div></nav>
+</header>
 
-<nav class="tabs"><div class="wrap" role="tablist" id="tabs"></div></nav>
+<nav class="tabs" id="phasebar"><div class="wrap" role="tablist" id="tabs"></div></nav>
 
 <main class="wrap">
-  <input class="search" id="q" type="search" placeholder="Rezept oder Zutat suchen …" aria-label="Rezepte durchsuchen">
+ <!-- REZEPTE -->
+ <section id="v-rezepte">
   <div id="intro"></div>
-  <div class="cats" id="cats" aria-label="Kategorie"></div>
+  <div class="meals" id="meals" aria-label="Tageszeit"></div>
+  <input class="search" id="q" type="search" placeholder="Rezept oder Zutat suchen …" aria-label="Rezepte durchsuchen">
   <p class="count" id="count"></p>
   <div id="list"></div>
+ </section>
 
-  <section class="extra" id="ampel">
-    <h2>Lebensmittel-Ampel (Phase 3)</h2>
-    <table class="stack"><thead><tr><th>Gruppe</th><th>Gut</th><th>In Maßen</th><th>Meiden</th></tr></thead><tbody id="amp"></tbody></table>
-  </section>
+ <!-- WOCHENPLAN -->
+ <section id="v-wochenplan" hidden>
+  <div id="wintro"></div>
+  <div class="days" id="days"></div>
+  <div id="plan"></div>
+ </section>
 
-  <section class="extra" id="woche">
-    <h2>Wochenplan (Phase 3)</h2>
-    <table class="stack"><thead><tr><th>Tag</th><th>Frühstück</th><th>Mittag</th><th>Abend</th></tr></thead><tbody id="wp"></tbody></table>
+ <!-- TIPPS -->
+ <section id="v-tipps" hidden>
+  <section class="extra">
+   <h2>Lebensmittel-Ampel (Alltag)</h2>
+   <table class="stack"><thead><tr><th>Gruppe</th><th>Gut</th><th>In Maßen</th><th>Meiden</th></tr></thead><tbody id="amp"></tbody></table>
   </section>
-
-  <section class="extra shop" id="einkauf">
-    <h2>Einkaufsliste</h2>
-    <div id="shop"></div>
-    <button class="reset" id="reset">Alle Häkchen entfernen</button>
+  <section class="extra tips">
+   <h2>Wichtig im Alltag</h2>
+   <ul>
+    <li><b>Trinken:</b> 1,5–2 Liter am Tag, vor allem Wasser und ungesüßter Tee.</li>
+    <li><b>Ballaststoffe langsam steigern:</b> über 2–3 Wochen, sonst gibt es Blähungen.</li>
+    <li><b>Nüsse, Samen, Körner, Popcorn</b> sind nach heutigem Wissen erlaubt.</li>
+    <li><b>Bewegung:</b> täglich etwa 30 Minuten, zum Beispiel Spazierengehen.</li>
+    <li><b>Neue Lebensmittel</b> in der Aufbauphase einzeln testen – bei Beschwerden einen Schritt zurück.</li>
+   </ul>
   </section>
+  <section class="extra shop">
+   <h2>Einkaufsliste</h2>
+   <div id="shop"></div>
+   <button class="reset" id="reset">Alle Häkchen entfernen</button>
+  </section>
+ </section>
 </main>
 
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-title">
+ <div class="in"><div class="top"><h2 id="sh-title"></h2><button class="close" id="sh-close" aria-label="Schließen">×</button></div><div class="body" id="sh-body"></div></div>
+</div>
+
 <footer class="wrap">
-  <p><b>Sofort zum Arzt</b> bei Fieber, starken Bauchschmerzen (meist links unten), Blut im Stuhl oder Erbrechen. Wie lange Phase 1 und 2 dauern, entscheidet der Arzt.</p>
-  <p>Quellen: <a href="https://www.doccheck.com/de/detail/articles/29837-mythos-divertikelkrankheit-sind-samen-und-koerner-tabu">DocCheck (S2k-Leitlinie)</a> · <a href="https://www.gesundheitsinformation.de/behandlung-der-chronischen-divertikelkrankheit.html">gesundheitsinformation.de</a> · <a href="https://www.pharmazeutische-zeitung.de/die-grosse-unbekannte-im-darm-157759/seite/2/">Pharmazeutische Zeitung</a>. Ersetzt keine ärztliche Beratung.</p>
+ <p><b>Sofort zum Arzt</b> bei Fieber, starken Bauchschmerzen (meist links unten), Blut im Stuhl oder Erbrechen. Wie lange Schub- und Aufbauphase dauern, entscheidet der Arzt.</p>
+ <p>Die Bilder sind Zeichnungen und zeigen ungefähr, wie das Gericht aussieht. Quellen: <a href="https://www.doccheck.com/de/detail/articles/29837-mythos-divertikelkrankheit-sind-samen-und-koerner-tabu">DocCheck (S2k-Leitlinie)</a> · <a href="https://www.gesundheitsinformation.de/behandlung-der-chronischen-divertikelkrankheit.html">gesundheitsinformation.de</a> · <a href="https://www.pharmazeutische-zeitung.de/die-grosse-unbekannte-im-darm-157759/seite/2/">Pharmazeutische Zeitung</a>. Ersetzt keine ärztliche Beratung.</p>
 </footer>
 
 <script>
@@ -183,6 +256,33 @@ const R=[
 {p:3,k:'Snack',n:'Joghurt mit Beeren und Nüssen',t:'3 Min',z:['300 g Naturjoghurt','150 g Beeren','2 EL Walnüsse','1 EL Leinsamen','1 TL Honig'],s:['Joghurt in Schalen füllen.','Beeren, Nüsse und Leinsamen darübergeben.','Mit Honig beträufeln.'],i:{v:'bowl',b:'#fbfaf5',t:[['berry','#6a3fa0',6],['berry','#d6334a',5],['nut','#8a5a2b',4]]}},
 {p:3,k:'Snack',n:'Haferflocken-Bananen-Kekse',t:'25 Min',z:['2 reife Bananen','150 g Haferflocken','2 EL Rosinen','1 TL Zimt'],s:['Bananen zerdrücken, mit Haferflocken, Rosinen und Zimt mischen.','Kleine Häufchen aufs Backblech setzen, flach drücken.','Bei 180 °C 15 Minuten backen.'],i:{v:'plate',b:'#f3f0ea',t:[['cookie','#c9995a',5]]}}
 ];
+// Tageszeiten: F = Frühstück, M = Mittagessen, A = Abendessen, Z = Zwischendurch, T = über den Tag (Schub)
+const MEAL={
+'Grießbrei mit Apfelmus':'F','Milchreis mit Zimt':'FZ','Rührei mit Toast':'FA','Bananen-Joghurt-Shake':'FZ','Pfannkuchen mit Apfelmus':'FM',
+'Karotten-Kartoffel-Suppe':'MA','Kürbiscremesuppe':'MA','Zucchini-Cremesuppe':'MA','Hühnersuppe mit Nudeln':'MA','Kartoffelsuppe':'MA',
+'Hähnchen mit Kartoffelpüree und Karotten':'M','Gedünsteter Fisch mit Reis und Zucchini':'M','Putenschnitzel mit Reis und Möhren':'M','Seelachs mit Kartoffelpüree und Spinat':'M','Nudeln mit passierter Tomatensauce':'MA','Polenta mit Karottengemüse':'MA',
+'Overnight Oats mit Beeren und Leinsamen':'F','Bircher-Müsli mit Apfel':'F','Chia-Pudding mit Mango':'FZ','Porridge mit Apfel und Zimt':'F','Vollkornbrot mit Hüttenkäse und Gemüse':'FA','Avocado-Brot mit Ei':'FA','Grüner Smoothie mit Hafer':'FZ',
+'Linsen-Gemüse-Eintopf':'MA','Minestrone':'MA','Erbsensuppe':'MA','Gemüse-Chili ohne Fleisch':'MA','Vollkornpasta mit Gemüse-Tomatensauce':'M','Lachs mit Ofengemüse und Quinoa':'M','Kichererbsen-Curry mit Spinat':'M','Ofenkartoffel mit Kräuterquark und Brokkoli':'MA','Gemüse-Reispfanne mit Naturreis':'M','Hähnchen-Gemüse-Pfanne mit Vollkornreis':'M','Quinoa-Bowl mit Süßkartoffel und Bohnen':'MA','Ratatouille mit Vollkornbaguette':'MA','Kabeljau auf Linsengemüse':'M','Gefüllte Paprika mit Bulgur':'M','Vollkorn-Gemüsepizza':'MA',
+'Bunter Bohnensalat':'AM','Bulgursalat mit Kräutern':'AM','Linsensalat mit Feta':'AM','Gemüse-Omelett mit Vollkornbrot':'A','Vollkorn-Wrap mit Hummus und Gemüse':'AM',
+'Nuss-Trockenobst-Mix':'Z','Selbstgemachtes Popcorn':'Z','Gemüsesticks mit Hummus':'ZA','Joghurt mit Beeren und Nüssen':'ZF','Haferflocken-Bananen-Kekse':'Z'};
+R.forEach(r=>{r.m=r.p===1?['T']:(MEAL[r.n]||'').split('')});
+// Wochenpläne: je Tag [Frühstück, Zwischendurch, Mittag, Zwischendurch, Abend]
+const SCHUBTAG=[['07:30','Frühstück',['Fenchel-Kamillen-Tee','Haferschleim']],['10:00','Zwischendurch',['Klare Gemüsebrühe']],['12:30','Mittagessen',['Hühnerbrühe','Zwieback mit Tee']],['15:30','Zwischendurch',['Apfelmus selbst gemacht']],['18:30','Abendessen',['Reisschleim','Fenchel-Kamillen-Tee']]];
+const WEEK={
+2:[['Grießbrei mit Apfelmus','Bananen-Joghurt-Shake','Hähnchen mit Kartoffelpüree und Karotten','Apfelmus selbst gemacht','Karotten-Kartoffel-Suppe'],
+['Rührei mit Toast','Milchreis mit Zimt','Gedünsteter Fisch mit Reis und Zucchini','Zwieback mit Tee','Kürbiscremesuppe'],
+['Milchreis mit Zimt','Bananen-Joghurt-Shake','Putenschnitzel mit Reis und Möhren','Apfelmus selbst gemacht','Nudeln mit passierter Tomatensauce'],
+['Pfannkuchen mit Apfelmus','Zwieback mit Tee','Hühnersuppe mit Nudeln','Milchreis mit Zimt','Polenta mit Karottengemüse'],
+['Grießbrei mit Apfelmus','Bananen-Joghurt-Shake','Seelachs mit Kartoffelpüree und Spinat','Apfelmus selbst gemacht','Zucchini-Cremesuppe'],
+['Rührei mit Toast','Milchreis mit Zimt','Nudeln mit passierter Tomatensauce','Zwieback mit Tee','Kartoffelsuppe'],
+['Pfannkuchen mit Apfelmus','Bananen-Joghurt-Shake','Hähnchen mit Kartoffelpüree und Karotten','Apfelmus selbst gemacht','Hühnersuppe mit Nudeln']],
+3:[['Overnight Oats mit Beeren und Leinsamen','Gemüsesticks mit Hummus','Linsen-Gemüse-Eintopf','Nuss-Trockenobst-Mix','Vollkornbrot mit Hüttenkäse und Gemüse'],
+['Bircher-Müsli mit Apfel','Joghurt mit Beeren und Nüssen','Vollkornpasta mit Gemüse-Tomatensauce','Selbstgemachtes Popcorn','Bunter Bohnensalat'],
+['Porridge mit Apfel und Zimt','Gemüsesticks mit Hummus','Lachs mit Ofengemüse und Quinoa','Nuss-Trockenobst-Mix','Gemüse-Omelett mit Vollkornbrot'],
+['Avocado-Brot mit Ei','Grüner Smoothie mit Hafer','Kichererbsen-Curry mit Spinat','Haferflocken-Bananen-Kekse','Linsensalat mit Feta'],
+['Chia-Pudding mit Mango','Joghurt mit Beeren und Nüssen','Kabeljau auf Linsengemüse','Nuss-Trockenobst-Mix','Vollkorn-Wrap mit Hummus und Gemüse'],
+['Overnight Oats mit Beeren und Leinsamen','Gemüsesticks mit Hummus','Vollkorn-Gemüsepizza','Selbstgemachtes Popcorn','Minestrone'],
+['Bircher-Müsli mit Apfel','Haferflocken-Bananen-Kekse','Ratatouille mit Vollkornbaguette','Joghurt mit Beeren und Nüssen','Bulgursalat mit Kräutern']]};
 
 // Zeichnet aus einer Bild-Beschreibung ein SVG des fertigen Gerichts
 function dish(spec,seed){
@@ -296,59 +396,139 @@ function dish(spec,seed){
 </script>
 <script>
 {
-const PH={1:'Phase 1 · Schub',2:'Phase 2 · Aufbau',3:'Phase 3 · Alltag'};
+const PHN={1:'Schub',2:'Aufbau',3:'Alltag'};
+const SHORT={F:'Frühstück',M:'Mittag',A:'Abend',Z:'Snacks'};
+const ML={F:'Frühstück',M:'Mittagessen',A:'Abendessen',Z:'Zwischendurch',T:'Über den Tag verteilt'};
+const ICON={
+ all:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>',
+ F:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="14" r="4"/><path d="M12 4v3M5 8l2 2M19 8l-2 2M3 20h18"/></svg>',
+ M:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M5 5l1.8 1.8M17.2 17.2 19 19M5 19l1.8-1.8M17.2 6.8 19 5"/></svg>',
+ A:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>',
+ Z:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 7c-3-3-8-1-7 5 1 5 4 8 7 7 3 1 6-2 7-7 1-6-4-8-7-5z"/><path d="M12 7c0-2 1-3 3-4"/></svg>'};
 const INTRO={
- all:'<div class="intro">Drei Phasen: erst <b>schonen</b>, dann <b>aufbauen</b>, dann dauerhaft <b>ballaststoffreich</b> essen. 55 Rezepte für je 2 Portionen. Tippe auf ein Rezept, um es zu öffnen. Die Bilder sind Zeichnungen und zeigen, wie das Gericht ungefähr aussieht.</div>',
- 1:'<div class="intro warn"><b>Akuter Schub (erste 1–3 Tage):</b> wenig essen, mindestens 2 Liter trinken. Nur klare Flüssigkeiten und sehr leichte Kost. Bei leichten Schüben ist oft keine strenge Diät nötig – Arzt fragen.</div>',
- 2:'<div class="intro"><b>Aufbaukost (ca. 1–4 Wochen):</b> ballaststoff- und fettarm. Gemüse geschält und weich gekocht, nichts Scharfes oder Blähendes. Jeden Tag nur ein neues Lebensmittel testen.</div>',
- 3:'<div class="intro"><b>Dauerernährung:</b> Ziel ca. 30 g Ballaststoffe am Tag, langsam über 2–3 Wochen steigern, 1,5–2 Liter trinken. Nüsse, Samen, Körner und Popcorn sind erlaubt. Wenig rotes Fleisch.</div>'
-};
-
+ all:'<div class="intro">Drei Phasen: erst <b>schonen</b>, dann <b>aufbauen</b>, dann dauerhaft <b>ballaststoffreich</b> essen. Wähle oben die Phase und unten die Tageszeit. Alle Rezepte für 2 Portionen.</div>',
+ 1:'<div class="intro warn"><b>Schub (meist 1–3 Tage):</b> wenig essen, mindestens 2 Liter trinken. Nur klare Flüssigkeiten und sehr leichte Kost, über den Tag verteilt. Bei leichten Schüben ist oft keine strenge Diät nötig – Arzt fragen.</div>',
+ 2:'<div class="intro"><b>Aufbau (ca. 1–4 Wochen):</b> ballaststoff- und fettarm. Gemüse geschält und weich gekocht, nichts Scharfes oder Blähendes. Jeden Tag nur ein neues Lebensmittel testen.</div>',
+ 3:'<div class="intro"><b>Alltag:</b> Ziel ca. 30 g Ballaststoffe am Tag, langsam über 2–3 Wochen steigern, 1,5–2 Liter trinken. Nüsse, Samen, Körner und Popcorn sind erlaubt. Wenig rotes Fleisch.</div>'};
 const AMP=[
  ['Getreide','Vollkornbrot, Haferflocken, Naturreis, Vollkornnudeln, Quinoa','Weißbrot, helle Nudeln',''],
  ['Gemüse & Obst','fast alles, gern mit Schale','sehr blähende Sorten (Kohl, Zwiebeln) je nach Verträglichkeit',''],
  ['Eiweiß','Hülsenfrüchte, Fisch, Geflügel, Eier, Joghurt','Käse, Wurst','rotes und verarbeitetes Fleisch'],
  ['Fette','Olivenöl, Rapsöl, Nüsse, Samen','Butter','Frittiertes, Fast Food'],
- ['Getränke','Wasser, Tee','Kaffee','viel Alkohol, Limo']
-];
-const WP=[
- ['Montag','Overnight Oats','Linsen-Gemüse-Eintopf','Vollkornbrot mit Hüttenkäse'],
- ['Dienstag','Vollkornbrot mit Hüttenkäse','Vollkornpasta mit Gemüsesauce','Bohnensalat'],
- ['Mittwoch','Overnight Oats','Lachs mit Ofengemüse','Gemüse-Omelett'],
- ['Donnerstag','Vollkornbrot mit Ei','Rest Linseneintopf','Bohnensalat'],
- ['Freitag','Overnight Oats','Kichererbsen-Curry','Vollkornbrot mit Gemüse'],
- ['Samstag','Müsli mit Obst','Vollkornpasta mit Gemüsesauce','Gemüse-Omelett'],
- ['Sonntag','Vollkornbrot mit Hüttenkäse','Lachs mit Ofengemüse','Rest Curry']
-];
-const SHOP=['Haferflocken, Leinsamen, Vollkornbrot','Vollkornnudeln, Naturreis, Quinoa','Rote Linsen, Kichererbsen, Bohnen (Dosen)','Gehackte Tomaten, Kokosmilch light, Gemüsebrühe','Karotten, Zucchini, Paprika, Brokkoli, Spinat','Zwiebeln, Süßkartoffeln','Beeren (TK), Äpfel, Bananen, Trockenpflaumen','Naturjoghurt, Hüttenkäse, Milch, Eier, Parmesan','Lachs oder Seelachs, Hähnchenbrust','Olivenöl, Rapsöl, Nüsse, Hummus','Kamillen- und Fencheltee, Zwieback (Vorrat)'];
+ ['Getränke','Wasser, Tee','Kaffee','viel Alkohol, Limo']];
+const SHOP=['Haferflocken, Leinsamen, Vollkornbrot','Vollkornnudeln, Naturreis, Quinoa, Bulgur','Rote Linsen, Berglinsen, Kichererbsen, Bohnen (Dosen)','Gehackte und passierte Tomaten, Kokosmilch light, Gemüsebrühe','Karotten, Zucchini, Paprika, Brokkoli, Spinat','Zwiebeln, Kartoffeln, Süßkartoffeln','Beeren (TK), Äpfel, Bananen, Mango, Trockenobst','Naturjoghurt, Hüttenkäse, Quark, Milch, Eier, Feta','Lachs, Kabeljau oder Seelachs, Hähnchenbrust','Olivenöl, Rapsöl, Nüsse, Hummus','Kamillen- und Fencheltee, Zwieback (Vorrat)'];
+const DAYS=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
+const SLOTS=[['07:30','F'],['10:00','Z'],['12:30','M'],['15:30','Z'],['18:30','A']];
 
-const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-let phase=store.get('dk-phase','all');let cat='Alle';
-const CATS=['Alle','Frühstück','Suppe','Brei','Hauptgericht','Salat','Abendessen','Snack','Getränk'];
-const catsEl=document.getElementById('cats');
-function drawCats(){const have=new Set(R.filter(r=>phase=='all'||r.p==phase).map(r=>r.k));if(cat!=='Alle'&&!have.has(cat))cat='Alle';catsEl.innerHTML=CATS.filter(c=>c==='Alle'||have.has(c)).map(c=>`<button data-c="${c}" aria-pressed="${c===cat}">${c}</button>`).join('')}
-catsEl.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;cat=b.dataset.c;drawCats();draw()});
-const tabs=document.getElementById('tabs'),list=document.getElementById('list'),q=document.getElementById('q'),intro=document.getElementById('intro');
-const TABS=[['all','Alle'],['1','Schub'],['2','Aufbau'],['3','Alltag']];
-function drawTabs(){tabs.innerHTML=TABS.map(([k,l])=>`<button role="tab" data-k="${k}" aria-selected="${k==phase}">${l}</button>`).join('')}
-function draw(){
- const term=q.value.trim().toLowerCase();
- intro.innerHTML=INTRO[phase];
- const rows=R.filter(r=>(phase=='all'||r.p==phase)&&(cat=='Alle'||r.k==cat)&&(!term||(r.n+' '+r.k+' '+r.z.join(' ')).toLowerCase().includes(term)));
- document.getElementById('count').textContent=rows.length+(rows.length===1?' Rezept':' Rezepte');
- list.innerHTML=rows.length?rows.map(r=>`<details class="r" data-i="${R.indexOf(r)}"><summary><div class="thumb">${dish(r.i,R.indexOf(r)+1)}</div><h3>${esc(r.n)}</h3><span class="badge b${r.p}">${PH[r.p].split(' · ')[1]}</span><span class="meta">${esc(r.k)} · ${esc(r.t)}</span></summary><div class="body"><div class="hero">${dish(r.i,R.indexOf(r)+1)}</div><h4>Zutaten (2 Portionen)</h4><ul>${r.z.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>${r.s.length?`<h4>Zubereitung</h4><ol>${r.s.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`:''}</div></details>`).join(''):'<p class="empty">Kein Rezept gefunden. Andere Zutat versuchen?</p>';
+const byName=n=>R.find(r=>r.n===n);
+const idx=r=>R.indexOf(r);
+const pic=r=>dish(r.i,idx(r)+1);
+
+let view=store.get('dk-view','rezepte');
+let phase=store.get('dk-phase','all');
+let meal='all';
+let wphase=store.get('dk-wphase','3');
+let day=(new Date().getDay()+6)%7;
+
+const $=id=>document.getElementById(id);
+
+function recipeBody(r){
+ const when=r.m.map(m=>ML[m]).join(', ');
+ return`<div class="hero">${pic(r)}</div><p class="when">Phase ${PHN[r.p]} · ${esc(when)} · ${esc(r.t)}</p><h4>Zutaten (2 Portionen)</h4><ul>${r.z.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>${r.s.length?`<h4>Zubereitung</h4><ol>${r.s.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`:''}`;
 }
-tabs.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;phase=b.dataset.k;store.set('dk-phase',phase);drawTabs();drawCats();draw()});
-q.addEventListener('input',draw);
-document.getElementById('amp').innerHTML=AMP.map(a=>`<tr><td><b>${a[0]}</b></td><td class="g">${a[1]}</td><td class="y">${a[2]}</td><td class="rd">${a[3]}</td></tr>`).join('');
-document.getElementById('wp').innerHTML=WP.map(w=>`<tr>${w.map((c,i)=>i?`<td>${c}</td>`:`<td><b>${c}</b></td>`).join('')}</tr>`).join('');
-let done=store.get('dk-shop',[]);
-const shop=document.getElementById('shop');
-function drawShop(){shop.innerHTML=SHOP.map((s,i)=>`<label><input type="checkbox" data-i="${i}" ${done.includes(i)?'checked':''}><span>${s}</span></label>`).join('')}
-shop.addEventListener('change',e=>{const i=+e.target.dataset.i;done=e.target.checked?[...done,i]:done.filter(x=>x!==i);store.set('dk-shop',done)});
-document.getElementById('reset').addEventListener('click',()=>{done=[];store.set('dk-shop',done);drawShop()});
-drawTabs();drawCats();draw();drawShop();
+function card(r){
+ return`<details class="r"><summary><div class="thumb">${pic(r)}</div><h3>${esc(r.n)}</h3><span class="badge b${r.p}">${PHN[r.p]}</span><span class="meta">${esc(r.m.map(m=>ML[m]).join(' · '))} · ${esc(r.t)}</span></summary><div class="body">${recipeBody(r)}</div></details>`;
+}
+
+/* ---------- Reiter oben ---------- */
+function drawViews(){
+ for(const b of $('views').children)b.setAttribute('aria-selected',b.dataset.v===view);
+ for(const v of ['rezepte','wochenplan','tipps'])$('v-'+v).hidden=v!==view;
+ $('phasebar').hidden=view==='tipps';
+ drawTabs();
+ if(view==='rezepte')drawList();
+ if(view==='wochenplan')drawWeek();
+}
+$('views').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;view=b.dataset.v;store.set('dk-view',view);drawViews();window.scrollTo({top:0})});
+
+/* ---------- Phasen ---------- */
+function drawTabs(){
+ const T=view==='wochenplan'?[['1','Schub'],['2','Aufbau'],['3','Alltag']]:[['all','Alle'],['1','Schub'],['2','Aufbau'],['3','Alltag']];
+ const cur=view==='wochenplan'?wphase:phase;
+ $('tabs').innerHTML=T.map(([k,l])=>`<button class="pill" role="tab" data-k="${k}" aria-selected="${k==cur}">${l}</button>`).join('');
+}
+$('tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+ if(view==='wochenplan'){wphase=b.dataset.k;store.set('dk-wphase',wphase);drawTabs();drawWeek()}
+ else{phase=b.dataset.k;store.set('dk-phase',phase);meal='all';drawTabs();drawList()}});
+
+/* ---------- Rezepte nach Tageszeit ---------- */
+function drawMeals(){
+ const keys=phase==='1'?[]:['all','F','M','A','Z'];
+ $('meals').hidden=!keys.length;
+ $('meals').innerHTML=keys.map(k=>`<button data-m="${k}" aria-pressed="${k===meal}">${ICON[k]}${k==='all'?'Alle':SHORT[k]}</button>`).join('');
+}
+$('meals').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;meal=b.dataset.m;drawList()});
+$('q').addEventListener('input',()=>drawList());
+function drawList(){
+ $('intro').innerHTML=INTRO[phase];
+ drawMeals();
+ const term=$('q').value.trim().toLowerCase();
+ const pool=R.filter(r=>(phase==='all'||r.p==phase)&&(!term||(r.n+' '+r.z.join(' ')).toLowerCase().includes(term)));
+ const order=meal==='all'?['T','F','M','A','Z']:[meal];
+ let html='',n=new Set();
+ for(const m of order){
+  const rows=pool.filter(r=>r.m.includes(m));
+  if(!rows.length)continue;
+  rows.forEach(r=>n.add(r));
+  html+=`<h2 class="group">${ML[m]}<small>${rows.length} ${rows.length===1?'Rezept':'Rezepte'}</small></h2>`+rows.map(card).join('');
+ }
+ $('count').textContent=n.size+(n.size===1?' Rezept':' Rezepte')+(meal==='all'&&phase!=='1'?' – manche passen zu mehreren Tageszeiten':'');
+ $('list').innerHTML=html||'<p class="empty">Kein Rezept gefunden. Andere Zutat oder Tageszeit versuchen?</p>';
+}
+
+/* ---------- Wochenplan ---------- */
+function dishBtn(name){
+ const r=byName(name);if(!r)return'';
+ return`<button class="wdish" data-i="${idx(r)}"><span class="wthumb">${pic(r)}</span><span>${esc(r.n)}</span><span class="arr" aria-hidden="true">›</span></button>`;
+}
+function drawWeek(){
+ const p=wphase;
+ $('days').hidden=p==='1';
+ $('wintro').innerHTML=p==='1'
+  ?'<div class="intro warn"><b>Schub-Tag:</b> So sieht ein Tag während des Schubs aus. Den Ablauf an jedem Schub-Tag wiederholen (meist 1–3 Tage), danach mit dem Aufbau-Plan weitermachen – aber nur, wenn der Arzt einverstanden ist.</div>'
+  :p==='2'?'<div class="intro"><b>Aufbau-Woche:</b> mild, weich gekocht, fettarm. Tippe auf ein Gericht, um das Rezept zu sehen.</div>'
+  :'<div class="intro"><b>Alltags-Woche:</b> ballaststoffreich und abwechslungsreich. Tippe auf ein Gericht, um das Rezept zu sehen.</div>';
+ $('days').innerHTML=DAYS.map((d,i)=>`<button data-d="${i}" aria-pressed="${i===day}" aria-label="${d}">${d.slice(0,2)}<small>${i===(new Date().getDay()+6)%7?'heute':''}</small></button>`).join('');
+ let slots;
+ if(p==='1')slots=SCHUBTAG.map(([t,l,names])=>[t,l,names]);
+ else{const d=WEEK[p][day];slots=SLOTS.map(([t,k],i)=>[t,ML[k],[d[i]]])}
+ const drinks=p==='1'?'Den ganzen Tag: Tee und stilles Wasser in kleinen Schlucken, mindestens 2 Liter.':'Über den Tag: 1,5–2 Liter Wasser oder ungesüßten Tee trinken – am besten zu jeder Mahlzeit ein Glas.';
+ const title=p==='1'?'Ein Schub-Tag':DAYS[day];
+ $('plan').innerHTML=`<h2 class="dayhead">${title}</h2><p class="daysub">Phase ${PHN[p]} · ${p==='1'?'gilt für jeden Schub-Tag':'Tagesablauf'}</p>
+ <ol class="tl">${slots.map(([t,l,names])=>`<li class="${l==='Zwischendurch'?'z':''}"><span class="time">${t}</span><span class="dotm"></span><div class="slot"><p class="lbl">${l}</p>${names.map(dishBtn).join('')}</div></li>`).join('')}
+ <li class="drink"><span class="time">ganztags</span><span class="dotm"></span><div class="slot">${drinks}</div></li></ol>`;
+}
+$('days').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;day=+b.dataset.d;drawWeek()});
+$('plan').addEventListener('click',e=>{const b=e.target.closest('.wdish');if(b)openSheet(R[+b.dataset.i])});
+
+/* ---------- Rezept-Fenster ---------- */
+let lastFocus=null;
+function openSheet(r){lastFocus=document.activeElement;$('sh-title').textContent=r.n;$('sh-body').innerHTML=recipeBody(r);$('sheet').classList.add('open');document.body.classList.add('lock');$('sh-close').focus()}
+function closeSheet(){$('sheet').classList.remove('open');document.body.classList.remove('lock');lastFocus&&lastFocus.focus()}
+$('sh-close').addEventListener('click',closeSheet);
+$('sheet').addEventListener('click',e=>{if(e.target===$('sheet'))closeSheet()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('sheet').classList.contains('open'))closeSheet()});
+
+/* ---------- Tipps & Einkauf ---------- */
+$('amp').innerHTML=AMP.map(a=>`<tr><td><b>${a[0]}</b></td><td class="g">${a[1]}</td><td class="y">${a[2]}</td><td class="rd">${a[3]}</td></tr>`).join('');
+let done=store.get('dk-shop2',[]);
+function drawShop(){$('shop').innerHTML=SHOP.map((s,i)=>`<label><input type="checkbox" data-i="${i}" ${done.includes(i)?'checked':''}><span>${s}</span></label>`).join('')}
+$('shop').addEventListener('change',e=>{const i=+e.target.dataset.i;done=e.target.checked?[...done,i]:done.filter(x=>x!==i);store.set('dk-shop2',done)});
+$('reset').addEventListener('click',()=>{done=[];store.set('dk-shop2',done);drawShop()});
+
+drawShop();drawViews();
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 }
 </script>
